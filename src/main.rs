@@ -1,6 +1,6 @@
 use molecules::molecule::*;
 
-const BORDER: f32 = RADIUS * 2.0 + 8.0;
+const BORDER: f32 = Atom::RADIUS * 2.0 + 8.0;
 
 fn init() -> Camera2D {
     if let Ok(n) = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH) {
@@ -18,8 +18,8 @@ fn init() -> Camera2D {
 async fn main() {
     let camera = init();
 
-    let mut gas = Molecule::generate();
-    println!("LEN: {LEN}");
+    let mut gas = Atom::generate();
+    println!("LEN: {}", gas.len());
 
     loop {
         clear_background(DARKGRAY);
