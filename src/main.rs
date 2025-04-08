@@ -1,7 +1,6 @@
 use molecules::molecule::*;
-use std::time;
 
-const BORDER: f32 = 40.0;
+const BORDER: f32 = RADIUS * 2.0 + 8.0;
 
 fn init() -> Camera2D {
     if let Ok(n) = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH) {
@@ -19,15 +18,16 @@ fn init() -> Camera2D {
 async fn main() {
     let camera = init();
 
-    let mut gas = vec![Molecule::new(Vec2::ZERO, Vec2::ZERO)];
+    let mut gas = Molecule::generate();
+    println!("LEN: {LEN}");
 
     loop {
         clear_background(DARKGRAY);
         set_camera(&camera);
 
-        gas[0].draw();
-
-        draw_rectangle_lines(-HALF, -HALF, SIDE, SIDE, 2.0, GREEN);
+        for mol in &gas {
+            mol.draw()
+        }
 
         if is_key_pressed(KeyCode::Escape) {
             break;
