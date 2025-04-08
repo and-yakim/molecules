@@ -1,21 +1,18 @@
-use init::*;
-use molecules::molecule::*;
+use molecules::init::*;
+use molecules::spring::*;
 use molecules::*;
 
-#[macroquad::main("Molecules")]
+#[macroquad::main("Soft body")]
 async fn main() {
     let camera = init_with_camera();
 
-    let mut gas = Atom::generate();
-    println!("LEN: {}", gas.len());
+    let mut body = SoftBody::new(10, 10);
 
     loop {
         clear_background(DARKGRAY);
         set_camera(&camera);
 
-        for mol in &gas {
-            mol.draw()
-        }
+        body.draw();
 
         if is_key_pressed(KeyCode::Escape) {
             break;

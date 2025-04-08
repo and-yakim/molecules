@@ -1,17 +1,6 @@
-pub use macroquad::prelude::*;
+use super::init::*;
+use super::*;
 use std::f32::consts::PI;
-pub use std::time;
-
-pub const SIDE: f32 = 800.0;
-pub const HALF: f32 = SIDE / 2.0;
-
-const fn pow(num: f32, exp: usize) -> f32 {
-    if exp <= 1 {
-        num
-    } else {
-        num * pow(num, exp - 1)
-    }
-}
 
 pub trait Molecule {
     const RADIUS: f32;
