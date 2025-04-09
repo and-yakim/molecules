@@ -1,5 +1,3 @@
-use std::cell::Cell;
-
 use super::init::*;
 use super::*;
 
@@ -18,6 +16,14 @@ impl Point {
         Point { pos, vel }
     }
 
+    fn x(&self) -> f32 {
+        self.pos.x
+    }
+
+    fn y(&self) -> f32 {
+        self.pos.y
+    }
+
     fn from_shape(shape: (usize, usize), offset: Vec2) -> Self {
         let pos = vec2(shape.0 as f32, shape.1 as f32) * CELL;
         Self::new(pos + offset, Vec2::ZERO)
@@ -30,7 +36,11 @@ impl Point {
     fn force(&mut self, mol: &mut Self, ext_force: Vec2) {}
 
     fn draw(&self) {
-        draw_circle(self.pos.x, self.pos.y, 4.0, GREEN);
+        draw_circle(self.x(), self.y(), 4.0, GREEN);
+    }
+
+    fn draw_link(&self, next: &Self) {
+        draw_line(self.x(), self.y(), next.x(), next.y(), 2.0, DARKGREEN);
     }
 }
 
@@ -47,8 +57,27 @@ impl SoftBody {
     }
 
     pub fn draw(&self) {
-        for point in &self.arr {
-            point.draw();
+        let shape = self.arr.shape();
+        for i in 0..(shape[0] - 1) {
+            for j in 0..(shape[1] - 1) {
+                let curr = &self.arr[[i, j]];
+                let next = &self.arr[[i, j + 1]];
+                let orto = &self.arr[[i + 1, j]];
+                curr.draw_link(next);
+                curr.draw_link(orto);
+                curr.draw();
+            }
+            let curr = &self.arr[[i, shape[1] - 1]];
+            let orto = &self.arr[[i + 1, shape[1] - 1]];
+            curr.draw_link(orto);
+            curr.draw();
         }
+        for j in 0..(shape[1] - 1) {
+            let curr = &self.arr[[shape[0] - 1, j]];
+            let next = &self.arr[[shape[0] - 1, j + 1]];
+            curr.draw_link(next);
+            curr.draw();
+        }
+        self.arr[[shape[0] - 1, shape[1] - 1]].draw();
     }
 }
