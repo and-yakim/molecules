@@ -6,12 +6,13 @@ use molecules::*;
 async fn main() {
     let camera = init_with_camera();
 
-    let body = SoftBody::new(10, 10);
+    let mut body = SoftBody::new((10, 10), 20.0);
 
     loop {
         clear_background(DARKGRAY);
         set_camera(&camera);
 
+        body.update();
         body.draw();
 
         if is_key_pressed(KeyCode::Escape) {
