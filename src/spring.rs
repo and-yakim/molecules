@@ -52,6 +52,11 @@ pub struct SoftBody {
 
 const K: f32 = 0.01;
 
+pub fn spring_force(p1: Vec2, p2: Vec2, l0: f32) -> Vec2 {
+    let diff = p1 - p2;
+    K * (l0 - diff.length()) * diff.normalize()
+}
+
 impl SoftBody {
     pub fn new(shape: (usize, usize), cell: f32) -> Self {
         let offset = vec2(-cell * shape.0 as f32 / 2.0, -cell * shape.1 as f32 / 2.0);
@@ -63,45 +68,72 @@ impl SoftBody {
     }
 
     fn force(&mut self, i: [usize; 2], j: [usize; 2]) {
-        let diff = self.arr[i].pos - self.arr[j].pos;
-        let force = K * (self.cell - diff.length()) * diff.normalize();
+        let force = spring_force(self.arr[i].pos, self.arr[j].pos, self.cell);
         self.arr[i].add_force(force);
         self.arr[j].add_force(-force);
     }
 
-    pub fn update(&mut self) {
+    fn iterate<F2, F>(&self, f2: F2, f: F)
+    where
+        F2: Fn(&Point, &Point),
+        F: Fn(&Point),
+    {
         for i in 0..(self.shape.0 - 1) {
             for j in 0..(self.shape.1 - 1) {
                 let curr = [i, j];
                 let next = [i, j + 1];
                 let orto = [i + 1, j];
-                self.force(curr, next);
-                self.force(curr, orto);
+                f2(&self.arr[curr], &self.arr[next]);
+                f2(&self.arr[curr], &self.arr[orto]);
+                f(&self.arr[curr]);
             }
             let curr = [i, self.shape.1 - 1];
             let orto = [i + 1, self.shape.1 - 1];
-            self.force(curr, orto);
+            f2(&self.arr[curr], &self.arr[orto]);
+            f(&self.arr[curr]);
         }
         for j in 0..(self.shape.1 - 1) {
             let curr = [self.shape.0 - 1, j];
             let next = [self.shape.0 - 1, j + 1];
-            self.force(curr, next);
+            f2(&self.arr[curr], &self.arr[next]);
+            f(&self.arr[curr]);
         }
-        for point in self.arr.iter_mut() {
-            point.move_pos();
+        f(&self.arr[[self.shape.0 - 1, self.shape.1 - 1]]);
+    }
+
+    fn iterate_mut<F2, F>(&mut self, f2: F2, f: F)
+    where
+        F2: Fn(&mut Self, [usize; 2], [usize; 2]),
+        F: Fn(&mut Point),
+    {
+        for i in 0..(self.shape.0 - 1) {
+            for j in 0..(self.shape.1 - 1) {
+                let curr = [i, j];
+                let next = [i, j + 1];
+                let orto = [i + 1, j];
+                f2(self, curr, next);
+                f2(self, curr, orto);
+                f(&mut self.arr[curr]);
+            }
+            let curr = [i, self.shape.1 - 1];
+            let orto = [i + 1, self.shape.1 - 1];
+            f2(self, curr, orto);
+            f(&mut self.arr[curr]);
         }
+        for j in 0..(self.shape.1 - 1) {
+            let curr = [self.shape.0 - 1, j];
+            let next = [self.shape.0 - 1, j + 1];
+            f2(self, curr, next);
+            f(&mut self.arr[curr]);
+        }
+        f(&mut self.arr[[self.shape.0 - 1, self.shape.1 - 1]]);
+    }
+
+    pub fn update(&mut self) {
+        self.iterate_mut(Self::force, Point::move_pos);
     }
 
     pub fn draw(&self) {
-        for win in self.arr.windows([2, 1]) {
-            &win[[0, 0]].draw_link(&win[[1, 0]]);
-        }
-        for win in self.arr.windows([1, 2]) {
-            &win[[0, 0]].draw_link(&win[[0, 1]]);
-            &win[[0, 0]].draw();
-        }
-        for i in 0..self.shape.0 {
-            &self.arr[[i, self.shape.1 - 1]].draw();
-        }
+        self.iterate(Point::draw_link, Point::draw);
     }
 }
