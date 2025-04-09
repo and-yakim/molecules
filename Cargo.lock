@@ -176,15 +176,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "minifloat"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a1e0744e036a39379c5bcbde415cff7ee9ae45a557c2c916dba067f1a4830e5"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
 name = "miniquad"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -198,9 +189,9 @@ dependencies = [
 
 [[package]]
 name = "miniz_oxide"
-version = "0.8.7"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff70ce3e48ae43fa075863cef62e8b43b71a4f2382229920e0df362592919430"
+checksum = "3be647b768db090acb35d5ec5db2b0e1f1de11133ca123b9eacf5137868f892a"
 dependencies = [
  "adler2",
  "simd-adler32",
@@ -211,7 +202,6 @@ name = "molecules"
 version = "0.1.0"
 dependencies = [
  "macroquad",
- "minifloat",
  "ndarray",
 ]
 

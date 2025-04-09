@@ -6,5 +6,4 @@ default-run = "molecules"
 
 [dependencies]
 macroquad = "0.4.14"
-minifloat = "0.1.6"
 ndarray = "0.16.1"

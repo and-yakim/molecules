@@ -4,9 +4,9 @@ use super::*;
 use ndarray::prelude::*;
 
 struct Value {
-    x: f16,
-    y: f16,
-    z: f16,
+    x: f32,
+    y: f32,
+    z: f32,
 }
 
 struct Point {
