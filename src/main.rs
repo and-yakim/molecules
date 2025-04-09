@@ -6,7 +6,7 @@ use molecules::*;
 async fn main() {
     let camera = init_with_camera();
 
-    let mut gas = Atom::generate();
+    let gas = Atom::generate();
     println!("LEN: {}", gas.len());
 
     loop {

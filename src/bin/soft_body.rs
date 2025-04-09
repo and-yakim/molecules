@@ -6,7 +6,7 @@ use molecules::*;
 async fn main() {
     let camera = init_with_camera();
 
-    let mut body = SoftBody::new(10, 10);
+    let body = SoftBody::new(10, 10);
 
     loop {
         clear_background(DARKGRAY);
