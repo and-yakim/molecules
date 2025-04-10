@@ -3,10 +3,11 @@ use super::*;
 
 use ndarray::prelude::*;
 
+/// Starts from (cell, cell)
 pub struct BinnedArr<T> {
-    pub arr: Array2<Vec<T>>,
-    pub side: usize,
-    pub cell: f32,
+    arr: Array2<Vec<T>>,
+    side: usize,
+    cell: f32,
 }
 
 impl<T> BinnedArr<T> {
@@ -21,8 +22,8 @@ impl<T> BinnedArr<T> {
 
     pub fn get_coords(&self, pos: Vec2) -> [usize; 2] {
         [
-            (pos.x / self.cell).round() as usize - 1,
-            (pos.y / self.cell).round() as usize - 1,
+            (pos.x / self.cell).floor() as usize - 1,
+            (pos.y / self.cell).floor() as usize - 1,
         ]
     }
 
@@ -39,5 +40,20 @@ impl<T> BinnedArr<T> {
         let target = Vec2::splat(self.cell * (self.side as f32 / 2.0 + 1.0));
         let scale = SCREEN_SIDE / (self.cell * self.side as f32);
         get_camera(target, scale)
+    }
+
+    pub fn draw(&self) {
+        for i in 0..self.side {
+            for j in 0..self.side {
+                draw_rectangle_lines(
+                    self.cell + i as f32 * self.cell,
+                    self.cell + j as f32 * self.cell,
+                    self.cell,
+                    self.cell,
+                    2.0,
+                    RED,
+                );
+            }
+        }
     }
 }

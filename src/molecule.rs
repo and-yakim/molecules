@@ -53,16 +53,17 @@ impl<const R: usize> Atom<R> {
         self.pos += self.vel;
     }
 
-    pub fn generate(side: f32) -> Vec<Self> {
-        let side_n = (side / Self::DIAMETER) as usize;
+    pub fn generate(side: f32, offset: Vec2, sparsity: f32) -> Vec<Self> {
+        let dist = Self::DIAMETER * sparsity;
+        let side_n = (side / dist) as usize;
         let mut arr = Vec::with_capacity(side_n * side_n);
-        let start = Vec2::splat(Self::RC + Self::RADIUS);
+        let start = offset + Vec2::splat(Self::RADIUS);
         for i in 0..side_n {
             for j in 0..side_n {
                 let ampl = (-rand::gen_range::<f32>(0.0, 1.0).ln()).sqrt();
                 let angle = rand::gen_range(0.0, 2.0 * PI);
                 let vel = vec2(ampl * angle.cos(), ampl * angle.sin());
-                let pos = start + vec2(Self::DIAMETER * i as f32, Self::DIAMETER * j as f32);
+                let pos = start + vec2(dist * i as f32, dist * j as f32);
                 arr.push(Self::new(pos, vel));
             }
         }
