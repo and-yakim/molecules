@@ -7,15 +7,11 @@ use molecules::*;
 async fn main() {
     init();
     let cell = 100.0;
-    let radius = 20.0;
-    let side = (SIDE / (radius * 2.0)) as usize;
-    let n = side * side;
+    let side_n: usize = (SIDE / cell) as usize;
 
-    let mut binarr = BinnedArr::<usize>::new(side, cell, n);
+    let gas = Atom::<20>::generate(cell);
+    let mut binarr = BinnedArr::<usize>::new(side_n, cell, gas.len());
     let camera = binarr.get_camera();
-
-    let gas = Atom::generate(cell);
-    println!("LEN: {}", gas.len());
 
     loop {
         clear_background(DARKGRAY);
