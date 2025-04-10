@@ -53,10 +53,10 @@ impl<const R: usize> Atom<R> {
         self.pos += self.vel;
     }
 
-    pub fn generate(cell: f32) -> Vec<Self> {
-        let side_n = (SIDE / (Self::RADIUS * 2.0)) as usize;
+    pub fn generate(side: f32) -> Vec<Self> {
+        let side_n = (side / Self::DIAMETER) as usize;
         let mut arr = Vec::with_capacity(side_n * side_n);
-        let start = Vec2::splat(cell + Self::RADIUS);
+        let start = Vec2::splat(Self::RC + Self::RADIUS);
         for i in 0..side_n {
             for j in 0..side_n {
                 let ampl = (-rand::gen_range::<f32>(0.0, 1.0).ln()).sqrt();

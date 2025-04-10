@@ -3,14 +3,18 @@ use molecules::binned_arr::*;
 use molecules::molecule::*;
 use molecules::*;
 
+const SIDE: f32 = 1000.0;
+
 #[macroquad::main("Molecules")]
 async fn main() {
     init();
-    let cell = 100.0;
-    let side_n: usize = (SIDE / cell) as usize;
+    let cell = Atom::<20>::RC;
+    let side_n = (SIDE / cell) as usize;
 
-    let gas = Atom::<20>::generate(cell);
+    let gas = Atom::<20>::generate(SIDE);
     let mut binarr = BinnedArr::<usize>::new(side_n, cell, gas.len());
+
+    println!("N: {}", gas.len());
     let camera = binarr.get_camera();
 
     loop {

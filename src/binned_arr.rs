@@ -36,6 +36,8 @@ impl<T> BinnedArr<T> {
     }
 
     pub fn get_camera(&self) -> Camera2D {
-        get_camera(Vec2::splat(self.cell * (self.side as f32 / 2.0 + 1.0)))
+        let target = Vec2::splat(self.cell * (self.side as f32 / 2.0 + 1.0));
+        let scale = SCREEN_SIDE / (self.cell * self.side as f32);
+        get_camera(target, scale)
     }
 }
