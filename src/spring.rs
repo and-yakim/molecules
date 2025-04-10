@@ -4,21 +4,21 @@ use super::*;
 
 use ndarray::prelude::*;
 
-struct Point {
-    pos: Vec2,
-    vel: Vec2,
+pub struct Point {
+    pub pos: Vec2,
+    pub vel: Vec2,
 }
 
 impl Point {
-    fn new(pos: Vec2, vel: Vec2) -> Self {
+    pub fn new(pos: Vec2, vel: Vec2) -> Self {
         Point { pos, vel }
     }
 
-    fn x(&self) -> f32 {
+    pub fn x(&self) -> f32 {
         self.pos.x
     }
 
-    fn y(&self) -> f32 {
+    pub fn y(&self) -> f32 {
         self.pos.y
     }
 
@@ -31,22 +31,26 @@ impl Point {
         self.pos += self.vel;
     }
 
-    fn add_force(&mut self, force: Vec2) {
+    pub fn get_force(&self, pos: Vec2, l0: f32) -> Vec2 {
+        spring_force(self.pos, pos, l0)
+    }
+
+    pub fn add_force(&mut self, force: Vec2) {
         self.vel += force
     }
 
-    fn draw(&self) {
+    pub fn draw(&self) {
         draw_circle(self.x(), self.y(), 4.0, GREEN);
     }
 
-    fn draw_link(&self, next: &Self) {
+    pub fn draw_link(&self, next: &Self) {
         draw_line(self.x(), self.y(), next.x(), next.y(), 2.0, DARKGREEN);
     }
 }
 
-pub struct SoftBody {
-    arr: Array2<Point>,
-    shape: (usize, usize),
+pub struct DummyLattice {
+    pub arr: Array2<Point>,
+    pub shape: (usize, usize),
     cell: f32,
 }
 
@@ -57,10 +61,10 @@ pub fn spring_force(p1: Vec2, p2: Vec2, l0: f32) -> Vec2 {
     K * (l0 - diff.length()) * diff.normalize()
 }
 
-impl SoftBody {
+impl DummyLattice {
     pub fn new(shape: (usize, usize), cell: f32) -> Self {
         let offset = vec2(-cell * shape.0 as f32 / 2.0, -cell * shape.1 as f32 / 2.0);
-        SoftBody {
+        DummyLattice {
             arr: Array2::from_shape_fn(shape, |shape| Point::from_shape(shape, offset, cell)),
             shape,
             cell: cell * 1.1,
