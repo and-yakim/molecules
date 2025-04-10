@@ -1,12 +1,20 @@
 use init::*;
+use molecules::binned_arr::*;
 use molecules::molecule::*;
 use molecules::*;
 
 #[macroquad::main("Molecules")]
 async fn main() {
-    let camera = init_with_camera();
+    init();
+    let cell = 100.0;
+    let radius = 20.0;
+    let side = (SIDE / (radius * 2.0)) as usize;
+    let n = side * side;
 
-    let gas = Atom::generate();
+    let mut binarr = BinnedArr::<usize>::new(side, cell, n);
+    let camera = binarr.get_camera();
+
+    let gas = Atom::generate(cell);
     println!("LEN: {}", gas.len());
 
     loop {

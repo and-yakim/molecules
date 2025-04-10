@@ -1,5 +1,3 @@
-#![allow(unused)]
-use super::init::*;
 use super::*;
 
 pub struct Point {

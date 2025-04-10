@@ -1,4 +1,3 @@
-#![allow(unused)]
 use super::init::*;
 use super::*;
 use std::f32::consts::PI;
@@ -54,7 +53,7 @@ impl Molecule for Atom {
         self.pos += self.vel;
     }
 
-    fn force(&mut self, mol: &mut Self) {}
+    fn force(&mut self, _mol: &mut Self) {}
 
     fn draw(&self) {
         draw_circle(self.pos.x, self.pos.y, self.r(), DARKGREEN);
@@ -71,9 +70,9 @@ impl Atom {
 
     const SIDE_MOLS: usize = (SIDE / Self::DIAMETER) as usize;
     const GEN_LEN: usize = Self::SIDE_MOLS * Self::SIDE_MOLS;
-    pub fn generate() -> [Self; Self::GEN_LEN] {
+    pub fn generate(cell: f32) -> [Self; Self::GEN_LEN] {
         let mut arr = [Atom::default(); Self::GEN_LEN];
-        let start = vec2(-HALF + Self::RADIUS, -HALF + Self::RADIUS);
+        let start = Vec2::splat(cell);
         for i in 0..Self::SIDE_MOLS {
             for j in 0..Self::SIDE_MOLS {
                 let ampl = (-rand::gen_range::<f32>(0.0, 1.0).ln()).sqrt();

@@ -99,7 +99,8 @@ impl DummyLattice {
 
 #[macroquad::main("Dummy lattice")]
 async fn main() {
-    let camera = init_with_camera();
+    init();
+    let camera = get_camera(Vec2::ZERO);
 
     let mut body = DummyLattice::new((10, 10), 20.0);
 
