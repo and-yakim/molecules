@@ -12,8 +12,8 @@ async fn main() {
     let cell = Particle::RC;
     let side_n = (SIDE / cell) as usize;
 
-    let mut gas = Particle::generate(SIDE, Vec2::splat(cell), 1.0);
-    let mut binarr = BinnedArr::<i16>::new(side_n, cell, gas.len());
+    let mut gas = Particle::generate(SIDE, Vec2::splat(cell), 2.0);
+    let mut binarr = BinnedArr::<usize>::new(side_n, cell, gas.len());
     println!("N: {}", gas.len());
     let camera = binarr.get_camera();
 
@@ -22,12 +22,28 @@ async fn main() {
         set_camera(&camera);
 
         binarr.clear();
-        for (i, mol) in (0..gas.len() as i16).zip(gas.iter()) {
+        for (i, mol) in gas.iter().enumerate() {
             binarr.add(mol.pos, i);
         }
 
-        for mol in &gas {
-            mol.draw()
+        (0..binarr.side).for_each(|i| {
+            (0..binarr.side).for_each(|j| {
+                binarr.update_by_fn([i, j], |x, y| {
+                    if let Some(force) = gas[*x].get_force(&gas[*y]) {
+                        gas[*x].vel += force;
+                        gas[*y].vel -= force;
+                    }
+                });
+            })
+        });
+
+        // (0..binarr.side).for_each(|i| {
+        //     binarr.arr[i, 0]
+        // });
+
+        for mol in gas.iter_mut() {
+            mol.move_pos();
+            mol.draw();
         }
 
         if is_key_pressed(KeyCode::Escape) {

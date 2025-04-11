@@ -5,9 +5,9 @@ use ndarray::prelude::*;
 
 /// Starts from (cell, cell)
 pub struct BinnedArr<T> {
-    arr: Array2<Vec<T>>,
-    side: usize,
-    cell: f32,
+    pub arr: Array2<Vec<T>>,
+    pub side: usize,
+    pub cell: f32,
 }
 
 impl<T> BinnedArr<T> {
@@ -34,6 +34,32 @@ impl<T> BinnedArr<T> {
 
     pub fn clear(&mut self) {
         self.arr.iter_mut().for_each(Vec::clear);
+    }
+
+    fn next_rem(&self, i: usize) -> usize {
+        (i + 1) % self.side
+    }
+    fn corner_coords(&self, coords: [usize; 2]) -> [[usize; 2]; 4] {
+        let next_i = self.next_rem(coords[0]);
+        let next_j = self.next_rem(coords[1]);
+        [
+            [next_i, coords[1]],
+            [next_i, next_j],
+            [coords[0], next_j],
+            [self.next_rem(coords[0] + self.side - 2), next_j],
+        ]
+    }
+
+    pub fn update_by_fn<F: FnMut(&T, &T)>(&self, coords: [usize; 2], mut f: F) {
+        self.arr[coords].iter().enumerate().for_each(|(i, a)| {
+            self.arr[coords]
+                .iter()
+                .skip(i + 1)
+                .for_each(|other| f(a, other));
+            self.corner_coords(coords).into_iter().for_each(|corner| {
+                self.arr[corner].iter().for_each(|other| f(a, other));
+            });
+        });
     }
 
     pub fn get_camera(&self) -> Camera2D {

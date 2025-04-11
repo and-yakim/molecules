@@ -29,7 +29,7 @@ pub trait Molecule {
     }
 }
 
-const _FC: f32 = -(-1.0 / pow(2.5, 14) + 1.0 / pow(2.5, 8));
+const FC: f32 = -(-1.0 / pow(2.5, 14) + 1.0 / pow(2.5, 8));
 
 pub struct Atom<const R: usize> {
     pub pos: Vec2,
@@ -51,6 +51,20 @@ impl<const R: usize> Atom<R> {
 
     pub fn move_pos(&mut self) {
         self.pos += self.vel;
+    }
+
+    pub fn get_force(&self, other: &Self) -> Option<Vec2> {
+        let diff = self.pos - other.pos;
+        let r2 = diff.length_squared();
+        if r2 < Self::RC2 {
+            let f1 = Self::R2 / r2;
+            let f2 = f1.powi(3);
+            let df = f2 * f1 * (f2 - 1.0) - FC;
+            println!("{df}");
+            Some(df * diff.normalize())
+        } else {
+            None
+        }
     }
 
     pub fn generate(side: f32, offset: Vec2, sparsity: f32) -> Vec<Self> {
