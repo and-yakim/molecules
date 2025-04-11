@@ -4,15 +4,16 @@ use molecules::molecule::*;
 use molecules::*;
 
 const SIDE: f32 = 800.0;
+type Particle = Atom<20>;
 
 #[macroquad::main("Molecules")]
 async fn main() {
     init();
-    let cell = Atom::<20>::RC;
+    let cell = Particle::RC;
     let side_n = (SIDE / cell) as usize;
 
-    let mut gas = Atom::<20>::generate(SIDE, Vec2::splat(cell), 1.0);
-    let mut binarr = BinnedArr::<usize>::new(side_n, cell, gas.len());
+    let mut gas = Particle::generate(SIDE, Vec2::splat(cell), 1.0);
+    let mut binarr = BinnedArr::<i16>::new(side_n, cell, gas.len());
     println!("N: {}", gas.len());
     let camera = binarr.get_camera();
 
@@ -21,7 +22,7 @@ async fn main() {
         set_camera(&camera);
 
         binarr.clear();
-        for (i, mol) in gas.iter().enumerate() {
+        for (i, mol) in (0..gas.len() as i16).zip(gas.iter()) {
             binarr.add(mol.pos, i);
         }
 

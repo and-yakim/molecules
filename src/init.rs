@@ -1,6 +1,11 @@
 use super::*;
 
 pub const SCREEN_SIDE: f32 = 800.0;
+pub const CENTER: Vec2 = vec2(SCREEN_SIDE / 2.0, SCREEN_SIDE / 2.0);
+
+pub fn default_world_pos(screen_pos: Vec2) -> Vec2 {
+    screen_pos - CENTER
+}
 
 pub const fn pow(num: f32, exp: usize) -> f32 {
     if exp <= 1 {
