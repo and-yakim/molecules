@@ -84,3 +84,35 @@ impl<const R: usize> Atom<R> {
         arr
     }
 }
+
+pub struct DummyAtom<const R: usize> {
+    pub pos: Vec2,
+}
+
+impl<const R: usize> Molecule for DummyAtom<R> {
+    const RADIUS: f32 = R as f32;
+
+    fn pos(&self) -> Vec2 {
+        self.pos
+    }
+}
+
+impl<const R: usize> From<Vec2> for DummyAtom<R> {
+    fn from(value: Vec2) -> Self {
+        Self::new(value)
+    }
+}
+
+impl<const R: usize> DummyAtom<R> {
+    pub fn new(pos: Vec2) -> Self {
+        DummyAtom { pos }
+    }
+
+    pub fn from_atom(value: &Atom<R>, offset: Vec2) -> Self {
+        Self::new(value.pos + offset)
+    }
+
+    pub fn with_offset(&self, offset: Vec2) -> Self {
+        Self::new(self.pos + offset)
+    }
+}
