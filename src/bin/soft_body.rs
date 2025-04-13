@@ -1,3 +1,4 @@
+#![allow(unused)]
 use molecules::init::*;
 use molecules::spring::*;
 use molecules::*;
@@ -53,6 +54,55 @@ impl SoftBody {
         self.arr[[self.shape.0 - 1, self.shape.1 - 1]].move_pos();
     }
 
+    fn update_with_ext_force(&mut self, force: Vec2) {
+        for i in 0..(self.shape.0 - 1) {
+            for j in 0..(self.shape.1 - 1) {
+                self.force([i, j], [i + 1, j], self.cell);
+                self.force([i, j], [i, j + 1], self.cell);
+                self.force([i, j], [i + 1, j + 1], self.diag);
+                self.force([i + 1, j], [i, j + 1], self.diag);
+                self.arr[[i, j]].add_force(force);
+                self.arr[[i, j]].move_pos();
+            }
+            self.force([i, self.shape.1 - 1], [i + 1, self.shape.1 - 1], self.cell);
+            self.arr[[i, self.shape.1 - 1]].add_force(force);
+            self.arr[[i, self.shape.1 - 1]].move_pos();
+        }
+        for j in 0..(self.shape.1 - 1) {
+            self.force([self.shape.0 - 1, j], [self.shape.0 - 1, j + 1], self.cell);
+            self.arr[[self.shape.0 - 1, j]].add_force(force);
+            self.arr[[self.shape.0 - 1, j]].move_pos();
+        }
+        self.arr[[self.shape.0 - 1, self.shape.1 - 1]].add_force(force);
+        self.arr[[self.shape.0 - 1, self.shape.1 - 1]].move_pos();
+    }
+
+    fn get_outer_indexes(&self) -> Vec<[usize; 2]> {
+        (0..(self.shape.0 - 1))
+            .map(|i| [i, 0])
+            .chain((0..(self.shape.0 - 1)).map(|i| [self.shape.0 - 1, i]))
+            .chain((1..self.shape.0).map(|i| [i, self.shape.0 - 1]).rev())
+            .chain((0..self.shape.0).map(|i| [0, i]).rev())
+            .collect()
+    }
+
+    fn iter_outer<F: Fn([usize; 2], [usize; 2]) -> [usize; 2]>(&self, f: F) {
+        let chained = (0..(self.shape.0 - 1))
+            .map(|i| [i, 0])
+            .chain((0..(self.shape.0 - 1)).map(|i| [self.shape.0 - 1, i]))
+            .chain((1..self.shape.0).map(|i| [i, self.shape.0 - 1]).rev())
+            .chain((0..self.shape.0).map(|i| [0, i]).rev());
+        chained.reduce(f);
+    }
+
+    fn draw_outer(&self) {
+        self.iter_outer(|acc, value| {
+            self.arr[acc].draw_link(&self.arr[value]);
+            self.arr[acc].draw();
+            value
+        });
+    }
+
     fn draw_full(&self) {
         for i in 0..(self.shape.0 - 1) {
             for j in 0..(self.shape.1 - 1) {
@@ -79,6 +129,10 @@ async fn main() {
     let camera = get_camera(Vec2::ZERO, 1.0);
 
     let mut body = SoftBody::new((5, 5), 50.0);
+    let outer_iter = body.get_outer_indexes();
+
+    let gravity = vec2(0.0, 0.01);
+    let earth_y = SCREEN_SIDE / 2.0;
 
     loop {
         clear_background(DARKGRAY);
@@ -90,7 +144,14 @@ async fn main() {
             body.arr[[0, 0]].draw_link_pos(pos);
         }
 
-        body.update();
+        body.update_with_ext_force(gravity);
+        outer_iter.iter().for_each(|i| {
+            if body.arr[*i].y() > earth_y {
+                body.arr[*i].pos.y = earth_y;
+                body.arr[*i].vel.y = -body.arr[*i].vel.y;
+            }
+        });
+        // body.draw_outer();
         body.draw_full();
 
         if is_key_pressed(KeyCode::Escape) {

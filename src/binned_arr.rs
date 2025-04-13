@@ -36,6 +36,7 @@ impl<T> BinnedArr<T> {
         self.arr.iter_mut().for_each(Vec::clear);
     }
 
+    // replace with n + 2
     fn next_rem(&self, i: usize) -> usize {
         (i + 1) % self.side
     }

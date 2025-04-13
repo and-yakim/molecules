@@ -44,7 +44,7 @@ async fn main() {
             mol.move_pos();
         }
 
-        (0..binarr.side).for_each(|n| {
+        for n in 0..binarr.side {
             binarr.arr[[n, 0]].iter().for_each(|i| {
                 if gas[*i].pos.x < binarr.cell {
                     gas[*i].pos.x += SIDE;
@@ -65,7 +65,7 @@ async fn main() {
                     gas[*i].pos.y = SIDE;
                 }
             });
-        });
+        }
 
         for mol in gas.iter_mut() {
             mol.draw();
