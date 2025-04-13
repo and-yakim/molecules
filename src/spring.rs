@@ -30,6 +30,11 @@ impl Point {
         self.vel += force
     }
 
+    pub fn add_force_fn<F: Fn(&Self) -> Vec2>(&mut self, f: F) {
+        let force = f(&self);
+        self.vel += force
+    }
+
     pub fn apply_spring_force(&mut self, pos: Vec2, k: f32, l0: f32) {
         let force = spring_force(self.pos, pos, k, l0);
         self.add_force(force);

@@ -5,23 +5,23 @@ use molecules::*;
 
 use ndarray::prelude::*;
 
-struct SoftBody {
+struct RectBody {
     pub arr: Array2<Point>,
     pub shape: (usize, usize),
     cell: f32,
     diag: f32,
 }
 
-const K: f32 = 0.1;
+const K: f32 = 0.2;
 
-impl SoftBody {
+impl RectBody {
     fn from_shape(shape: (usize, usize), offset: Vec2, cell: f32) -> Point {
         let pos = vec2(shape.0 as f32, shape.1 as f32) * cell;
         Point::new(pos + offset, Vec2::ZERO)
     }
     fn new(shape: (usize, usize), cell: f32) -> Self {
         let offset = vec2(-cell * shape.0 as f32 / 2.0, -cell * shape.1 as f32 / 2.0);
-        SoftBody {
+        RectBody {
             arr: Array2::from_shape_fn(shape, |shape| Self::from_shape(shape, offset, cell)),
             shape,
             cell,
@@ -80,18 +80,18 @@ impl SoftBody {
     fn get_outer_indexes(&self) -> Vec<[usize; 2]> {
         (0..(self.shape.0 - 1))
             .map(|i| [i, 0])
-            .chain((0..(self.shape.0 - 1)).map(|i| [self.shape.0 - 1, i]))
-            .chain((1..self.shape.0).map(|i| [i, self.shape.0 - 1]).rev())
-            .chain((0..self.shape.0).map(|i| [0, i]).rev())
+            .chain((0..(self.shape.1 - 1)).map(|i| [self.shape.0 - 1, i]))
+            .chain((1..self.shape.0).map(|i| [i, self.shape.1 - 1]).rev())
+            .chain((0..self.shape.1).map(|i| [0, i]).rev())
             .collect()
     }
 
     fn iter_outer<F: Fn([usize; 2], [usize; 2]) -> [usize; 2]>(&self, f: F) {
         let chained = (0..(self.shape.0 - 1))
             .map(|i| [i, 0])
-            .chain((0..(self.shape.0 - 1)).map(|i| [self.shape.0 - 1, i]))
-            .chain((1..self.shape.0).map(|i| [i, self.shape.0 - 1]).rev())
-            .chain((0..self.shape.0).map(|i| [0, i]).rev());
+            .chain((0..(self.shape.1 - 1)).map(|i| [self.shape.0 - 1, i]))
+            .chain((1..self.shape.0).map(|i| [i, self.shape.1 - 1]).rev())
+            .chain((0..self.shape.1).map(|i| [0, i]).rev());
         chained.reduce(f);
     }
 
@@ -128,7 +128,7 @@ async fn main() {
     init();
     let camera = get_camera(Vec2::ZERO, 1.0);
 
-    let mut body = SoftBody::new((5, 5), 50.0);
+    let mut body = RectBody::new((20, 10), 30.0);
     let outer_iter = body.get_outer_indexes();
 
     let gravity = vec2(0.0, 0.01);
@@ -140,8 +140,13 @@ async fn main() {
 
         if is_key_down(KeyCode::Space) {
             let pos = default_world_pos(mouse_position().into());
-            body.arr[[0, 0]].apply_spring_force(pos, K / 100.0, 0.0);
+            body.arr[[0, 0]].apply_spring_force(pos, K / 100.0 * (body.shape.0 as f32).ln(), 0.0);
             body.arr[[0, 0]].draw_link_pos(pos);
+        }
+        if is_key_pressed(KeyCode::F) {
+            outer_iter.iter().for_each(|i| {
+                body.arr[*i].vel = Vec2::ZERO;
+            });
         }
 
         body.update_with_ext_force(gravity);
@@ -149,6 +154,8 @@ async fn main() {
             if body.arr[*i].y() > earth_y {
                 body.arr[*i].pos.y = earth_y;
                 body.arr[*i].vel.y = -body.arr[*i].vel.y;
+            } else {
+                body.arr[*i].add_force_fn(|p| -0.01 * p.vel);
             }
         });
         // body.draw_outer();
