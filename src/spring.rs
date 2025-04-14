@@ -10,8 +10,11 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn new(pos: Vec2, vel: Vec2) -> Self {
-        Point { pos, vel }
+    pub fn new(pos: Vec2) -> Self {
+        Point {
+            pos,
+            vel: Vec2::ZERO,
+        }
     }
 
     pub fn x(&self) -> f32 {

@@ -3,7 +3,7 @@ use molecules::init::*;
 use molecules::soft_body::*;
 use molecules::*;
 
-#[macroquad::main("Soft body")]
+#[macroquad::main("Rect body")]
 async fn main() {
     init();
     let camera = get_camera(Vec2::ZERO, 1.0);
