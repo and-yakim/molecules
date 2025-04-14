@@ -58,7 +58,7 @@ pub fn spring_force(p1: Vec2, p2: Vec2, k: f32, l0: f32) -> Vec2 {
     k * (l0 - diff.length()) * diff.normalize()
 }
 
-struct Point3D {
+pub struct Point3D {
     pos: Vec3,
     vel: Vec3,
 }
