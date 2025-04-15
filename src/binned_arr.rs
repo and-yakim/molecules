@@ -6,15 +6,18 @@ use ndarray::prelude::*;
 /// Starts from (cell, cell)
 pub struct BinnedArr<T> {
     pub arr: Array2<Vec<T>>,
+    pub size: f32,
     pub side: usize,
     pub cell: f32,
 }
 
 impl<T> BinnedArr<T> {
-    pub fn new(side: usize, cell: f32, n: usize) -> Self {
+    pub fn new(size: f32, cell: f32, n: usize) -> Self {
+        let side = (size / cell).ceil() as usize;
         let estimate = n / (side * side) * 2;
         BinnedArr {
             arr: Array2::from_shape_fn((side, side), |_| Vec::with_capacity(estimate)),
+            size,
             side,
             cell,
         }

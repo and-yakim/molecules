@@ -3,18 +3,17 @@ use molecules::binned_arr::*;
 use molecules::molecule::*;
 use molecules::*;
 
-const SIDE: f32 = 800.0;
+const SIZE: f32 = 800.0;
 type Particle = Atom<20>;
 
 #[macroquad::main("Molecules")]
 async fn main() {
     init();
     let cell = Particle::RC;
-    let side_n = (SIDE / cell) as usize;
-    let far_border = cell + SIDE;
+    let far_border = cell + SIZE;
 
-    let mut gas = Particle::generate(SIDE, Vec2::splat(cell), 10.0);
-    let mut binarr = BinnedArr::<usize>::new(side_n, cell, gas.len());
+    let mut gas = Particle::generate(SIZE, Vec2::splat(cell), 10.0);
+    let mut binarr = BinnedArr::<usize>::new(SIZE, cell, gas.len());
     println!("N: {}", gas.len());
     let camera = binarr.get_camera();
 
@@ -37,8 +36,6 @@ async fn main() {
                 });
             })
         });
-        // make a (n + 2) side
-        // do the same usize generic
 
         for mol in gas.iter_mut() {
             mol.move_pos();
@@ -47,22 +44,22 @@ async fn main() {
         for n in 0..binarr.side {
             binarr.arr[[n, 0]].iter().for_each(|i| {
                 if gas[*i].pos.x < binarr.cell {
-                    gas[*i].pos.x += SIDE;
+                    gas[*i].pos.x += SIZE;
                 }
             });
             binarr.arr[[n, binarr.side - 1]].iter().for_each(|i| {
                 if gas[*i].pos.x > far_border {
-                    gas[*i].pos.x -= SIDE;
+                    gas[*i].pos.x -= SIZE;
                 }
             });
             binarr.arr[[0, n]].iter().for_each(|i| {
                 if gas[*i].pos.y < binarr.cell {
-                    gas[*i].pos.y += SIDE;
+                    gas[*i].pos.y += SIZE;
                 }
             });
             binarr.arr[[binarr.side - 1, n]].iter().for_each(|i| {
                 if gas[*i].pos.y > far_border {
-                    gas[*i].pos.y = SIDE;
+                    gas[*i].pos.y = SIZE;
                 }
             });
         }
