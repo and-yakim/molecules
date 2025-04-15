@@ -1,7 +1,7 @@
 use super::init::*;
 use super::*;
 
-use ndarray::prelude::*;
+pub use ndarray::prelude::*;
 
 /// Starts from (cell, cell)
 pub struct BinnedArr<T> {

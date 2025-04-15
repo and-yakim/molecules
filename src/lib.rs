@@ -4,7 +4,9 @@ pub use std::time;
 pub const DEBUG_RED: Color = Color { a: 0.5, ..RED };
 
 pub mod binned_arr;
+pub mod gas;
 pub mod init;
+pub mod mesh;
 pub mod molecule;
 pub mod soft_body;
 pub mod spring;
