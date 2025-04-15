@@ -14,6 +14,8 @@ async fn main() {
         clear_background(DARKGRAY);
         set_camera(&camera);
 
+        let pos = round_to_triangular_grid(default_world_pos(mouse_position().into()), mesh.cell);
+        draw_circle(pos.x, pos.y, 4.0, DEBUG_RED);
         mesh.draw();
 
         if is_key_pressed(KeyCode::Escape) {
