@@ -5,7 +5,6 @@ use super::*;
 type Particle = Atom<4>;
 const SIZE: f32 = 1000.0;
 const CELL: f32 = Particle::RC;
-const FAR_BORDER: f32 = CELL + SIZE;
 
 pub struct Gas {
     pub value: Vec<Particle>,
@@ -39,10 +38,10 @@ impl Gas {
         }
     }
 
+    /// [CELL, CELL + SIZE)
     fn wrap_range(num: f32) -> f32 {
         ((num - CELL) % SIZE + SIZE) % SIZE + CELL
     }
-
     pub fn move_gas(&mut self) {
         for mol in self.value.iter_mut() {
             mol.move_pos();
