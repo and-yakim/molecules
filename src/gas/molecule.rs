@@ -1,9 +1,6 @@
-use super::init::*;
 use super::*;
+pub use crate::init::pow;
 use std::f32::consts::PI;
-
-pub use fixed::types::I11F21;
-pub use nalgebra::Vector2;
 
 /// +- 1k in f32
 pub type FVec2 = Vector2<I11F21>;

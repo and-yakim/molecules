@@ -1,4 +1,3 @@
-use super::init::*;
 use super::*;
 
 pub use ndarray::prelude::*;
@@ -67,9 +66,11 @@ impl<T> BinnedArr<T> {
     }
 
     pub fn get_camera(&self) -> Camera2D {
-        let target = Vec2::splat(self.cell * (self.side as f32 / 2.0 + 1.0));
-        let scale = SCREEN_SIDE / (self.cell * self.side as f32);
-        get_camera(target, scale)
+        Camera2D {
+            target: Vec2::splat(self.cell * (self.side as f32 / 2.0 + 1.0)),
+            zoom: 2.0 * Vec2::ONE / (self.cell * self.side as f32),
+            ..Default::default()
+        }
     }
 
     pub fn draw(&self) {

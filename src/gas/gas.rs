@@ -39,35 +39,27 @@ impl Gas {
         }
     }
 
+    fn wrap_range(num: f32) -> f32 {
+        ((num - CELL) % SIZE + SIZE) % SIZE + CELL
+    }
+
     pub fn move_gas(&mut self) {
         for mol in self.value.iter_mut() {
             mol.move_pos();
         }
 
-        for n in 0..self.system.side {
-            self.system.arr[[n, 0]].iter().for_each(|i| {
-                if self.value[*i].pos.x < self.system.cell {
-                    self.value[*i].pos.x += SIZE;
-                }
-            });
-            self.system.arr[[n, self.system.side - 1]]
+        for k in 0..self.system.side {
+            self.system.arr[[k, 0]]
                 .iter()
+                .chain(self.system.arr[[k, self.system.side - 1]].iter())
                 .for_each(|i| {
-                    if self.value[*i].pos.x > FAR_BORDER {
-                        self.value[*i].pos.x -= SIZE;
-                    }
+                    self.value[*i].pos.x = Self::wrap_range(self.value[*i].pos.x);
                 });
-            self.system.arr[[0, n]].iter().for_each(|i| {
-                if self.value[*i].pos.y < self.system.cell {
-                    self.value[*i].pos.y += SIZE;
-                }
-            });
-            self.system.arr[[self.system.side - 1, n]]
+            self.system.arr[[0, k]]
                 .iter()
+                .chain(self.system.arr[[self.system.side - 1, k]].iter())
                 .for_each(|i| {
-                    if self.value[*i].pos.y > FAR_BORDER {
-                        self.value[*i].pos.y -= SIZE;
-                    }
+                    self.value[*i].pos.y = Self::wrap_range(self.value[*i].pos.y);
                 });
         }
     }
