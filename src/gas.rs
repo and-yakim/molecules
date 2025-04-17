@@ -2,8 +2,8 @@ pub use super::binned_arr::*;
 pub use super::molecule::*;
 use super::*;
 
-type Particle = Atom<20>;
-const SIZE: f32 = 800.0;
+type Particle = Atom<4>;
+const SIZE: f32 = 1000.0;
 const CELL: f32 = Particle::RC;
 const FAR_BORDER: f32 = CELL + SIZE;
 

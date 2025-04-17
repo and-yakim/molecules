@@ -14,7 +14,7 @@ pub struct BinnedArr<T> {
 impl<T> BinnedArr<T> {
     pub fn new(size: f32, cell: f32, n: usize) -> Self {
         let side = (size / cell).ceil() as usize;
-        let estimate = n / (side * side) * 2;
+        let estimate = n / (side * side) + 1;
         BinnedArr {
             arr: Array2::from_shape_fn((side, side), |_| Vec::with_capacity(estimate)),
             size,

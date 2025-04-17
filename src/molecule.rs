@@ -2,35 +2,26 @@ use super::init::*;
 use super::*;
 use std::f32::consts::PI;
 
-use fixed::types::I11F21;
-use nalgebra::Vector2;
+pub use fixed::types::I11F21;
+pub use nalgebra::Vector2;
 
-type FVec2 = Vector2<I11F21>;
+/// +- 1k in f32
+pub type FVec2 = Vector2<I11F21>;
 
-fn fixed_vec2(x: f32, y: f32) -> FVec2 {
+pub fn fvec2(x: f32, y: f32) -> FVec2 {
     Vector2::new(I11F21::from_num(x), I11F21::from_num(y))
 }
 
-fn to_vec2(v: FVec2) -> Vec2 {
+pub fn to_vec2(v: FVec2) -> Vec2 {
     Vec2::new(v.x.to_num::<f32>(), v.y.to_num::<f32>())
 }
 
-fn distance(a: FVec2, b: FVec2) -> I11F21 {
+/// for distance below 32.0
+/// or Atom<R < 45.25>
+pub fn distance(a: FVec2, b: FVec2) -> I11F21 {
     let dx = a.x - b.x;
     let dy = a.y - b.y;
-
-    dx.saturating_mul(dx)
-        .saturating_add(dy.saturating_mul(dy))
-        .sqrt()
-}
-
-// for distance below 32.0
-// R < 4.525
-fn fast_distance(a: FVec2, b: FVec2) -> I11F21 {
-    let dx = a.x - b.x;
-    let dy = a.y - b.y;
-
-    (dx * dx + dy * dy).sqrt() // Panics on overflow
+    (dx * dx + dy * dy).sqrt()
 }
 
 pub trait Molecule {
