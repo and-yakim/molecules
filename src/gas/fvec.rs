@@ -4,6 +4,14 @@ use super::*;
 pub type Fixed = I11F21;
 pub type FVec2 = Vector2<Fixed>;
 
+pub const fn to_fixed(value: i32) -> Fixed {
+    Fixed::from_bits(value << 21)
+}
+
+pub const fn usize_to_fixed(value: usize) -> Fixed {
+    to_fixed(value as i32)
+}
+
 pub fn fvec2(x: f32, y: f32) -> FVec2 {
     FVec2::new(Fixed::from_num(x), Fixed::from_num(y))
 }
@@ -29,10 +37,6 @@ pub fn flength2(v: FVec2) -> Fixed {
 }
 
 // for Atom<R> constants
-
-pub const fn usize_to_fixed(value: usize) -> Fixed {
-    Fixed::from_bits((value as i32) << 21)
-}
 
 pub const fn fadd(a: Fixed, b: i32) -> Fixed {
     let fb = (b as i32) << 21;

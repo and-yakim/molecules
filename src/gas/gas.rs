@@ -3,7 +3,7 @@ pub use super::molecule::*;
 use super::*;
 
 type Particle = Atom<4>; // max 4
-const SIZE: Fixed = Fixed::from_bits(1000 << 21); // max ~1023
+const SIZE: Fixed = to_fixed(1000); // max ~1023
 const CELL: Fixed = Particle::RC;
 
 pub struct Gas {
