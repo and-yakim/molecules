@@ -29,7 +29,7 @@ impl<const R: usize> Atom<R> {
     pub const RC: Fixed = Fixed::from_bits((Self::RADIUS.to_bits() * 5) / 2);
     const RC2: Fixed = fmulf(Self::RC, Self::RC);
 
-    fn draw(&self) {
+    pub fn draw(&self) {
         draw_circle(
             self.pos.x.to_num(),
             self.pos.y.to_num(),
@@ -58,17 +58,17 @@ impl<const R: usize> Atom<R> {
         }
     }
 
-    pub fn generate(side: f32, offset: Vec2, sparsity: f32) -> Vec<Self> {
+    pub fn generate(side: Fixed, offset: FVec2, sparsity: f32) -> Vec<Self> {
         let dist = Self::DIAMETER * Fixed::from_num(sparsity);
-        let side_n = (Fixed::from_num(side) / dist).to_num();
+        let side_n = (side / dist).to_num();
         let mut arr = Vec::with_capacity((side_n * side_n) as usize);
-        let start = to_fvec2(offset) + FVec2::new(Self::RADIUS, Self::RADIUS);
+        let start = offset + FVec2::new(Self::RADIUS, Self::RADIUS);
         for i in 0..side_n {
             for j in 0..side_n {
                 let ampl = (-rand::gen_range::<f32>(0.0, 1.0).ln()).sqrt();
                 let angle = rand::gen_range(0.0, 2.0 * PI);
                 let vel = fvec2(ampl * angle.cos(), ampl * angle.sin());
-                let pos = start + Vector2::new(fmul(dist, i), fmul(dist, j));
+                let pos = start + FVec2::new(fmul(dist, i), fmul(dist, j));
                 arr.push(Self::new(pos, vel));
             }
         }

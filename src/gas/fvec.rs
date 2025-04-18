@@ -5,11 +5,11 @@ pub type Fixed = I11F21;
 pub type FVec2 = Vector2<Fixed>;
 
 pub fn fvec2(x: f32, y: f32) -> FVec2 {
-    Vector2::new(Fixed::from_num(x), Fixed::from_num(y))
+    FVec2::new(Fixed::from_num(x), Fixed::from_num(y))
 }
 
 pub fn to_fvec2(v: Vec2) -> FVec2 {
-    Vector2::new(Fixed::from_num(v.x), Fixed::from_num(v.y))
+    FVec2::new(Fixed::from_num(v.x), Fixed::from_num(v.y))
 }
 
 pub fn to_vec2(v: FVec2) -> Vec2 {

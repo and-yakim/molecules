@@ -3,8 +3,8 @@ pub use super::molecule::*;
 use super::*;
 
 type Particle = Atom<4>; // max 4
-const SIZE: f32 = 1000.0; // max 1000.0
-const CELL: f32 = Particle::RC;
+const SIZE: Fixed = Fixed::from_bits(1000 << 21); // max ~1023
+const CELL: Fixed = Particle::RC;
 
 pub struct Gas {
     pub value: Vec<Particle>,
@@ -13,7 +13,7 @@ pub struct Gas {
 
 impl Gas {
     pub fn new(sparcity: f32) -> Gas {
-        let value = Particle::generate(SIZE, Vec2::splat(CELL), sparcity);
+        let value = Particle::generate(SIZE, FVec2::new(CELL, CELL), sparcity);
         let system = BinnedArr::<usize>::new(SIZE, CELL, value.len());
         Gas { value, system }
     }
@@ -39,7 +39,7 @@ impl Gas {
     }
 
     /// [CELL, CELL + SIZE)
-    fn wrap_range(num: f32) -> f32 {
+    fn wrap_range(num: Fixed) -> Fixed {
         ((num - CELL) % SIZE + SIZE) % SIZE + CELL
     }
     pub fn move_gas(&mut self) {
@@ -64,6 +64,6 @@ impl Gas {
     }
 
     pub fn draw(&self) {
-        self.value.iter().for_each(Molecule::draw);
+        self.value.iter().for_each(Atom::draw);
     }
 }
