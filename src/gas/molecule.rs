@@ -1,70 +1,43 @@
 use super::*;
-pub use crate::init::pow;
 use std::f32::consts::PI;
 
-/// +- 1k in f32
-pub type FVec2 = Vector2<I11F21>;
+const fn pow_2_over_5(n: u32) -> i32 {
+    let base_bits = (2 << 21) / 5;
+    let mut result_bits = base_bits;
+    let mut i = 1;
 
-pub fn fvec2(x: f32, y: f32) -> FVec2 {
-    Vector2::new(I11F21::from_num(x), I11F21::from_num(y))
+    while i < n {
+        let product = (result_bits as i64) * (base_bits as i64);
+        result_bits = ((product + (1 << 20)) >> 21) as i32;
+        i += 1;
+    }
+    result_bits
 }
 
-pub fn to_vec2(v: FVec2) -> Vec2 {
-    Vec2::new(v.x.to_num::<f32>(), v.y.to_num::<f32>())
-}
-
-/// for distance below 32.0
-/// or Atom<R < 45.25>
-pub fn distance(a: FVec2, b: FVec2) -> I11F21 {
-    let dx = a.x - b.x;
-    let dy = a.y - b.y;
-    (dx * dx + dy * dy).sqrt()
-}
-
-pub trait Molecule {
-    const RADIUS: f32;
-
-    fn pos(&self) -> Vec2;
-
-    const DIAMETER: f32 = Self::RADIUS * 2.0;
-    const R2: f32 = pow(Self::RADIUS, 2);
-
-    const RC: f32 = Self::RADIUS * 2.5;
-    const RC2: f32 = pow(Self::RC, 2);
-
-    fn r(&self) -> f32 {
-        Self::RADIUS
-    }
-    fn d(&self) -> f32 {
-        Self::DIAMETER
-    }
-    fn r2(&self) -> f32 {
-        Self::R2
-    }
-
-    fn draw(&self) {
-        let pos = self.pos();
-        draw_circle(pos.x, pos.y, self.r(), DARKGREEN);
-    }
-}
-
-const FC: f32 = -(-1.0 / pow(2.5, 14) + 1.0 / pow(2.5, 8));
+const FC: Fixed = Fixed::from_bits(pow_2_over_5(14) - pow_2_over_5(8)); // 0xfff4e000 -0.000652313
 
 pub struct Atom<const R: usize> {
-    pub pos: Vec2,
-    pub vel: Vec2,
-}
-
-impl<const R: usize> Molecule for Atom<R> {
-    const RADIUS: f32 = R as f32;
-
-    fn pos(&self) -> Vec2 {
-        self.pos
-    }
+    pub pos: FVec2,
+    pub vel: FVec2,
 }
 
 impl<const R: usize> Atom<R> {
-    pub fn new(pos: Vec2, vel: Vec2) -> Self {
+    pub const RADIUS: Fixed = usize_to_fixed(R);
+    pub const DIAMETER: Fixed = fmul(Self::RADIUS, 2);
+    const R2: Fixed = fmulf(Self::RADIUS, Self::RADIUS);
+
+    pub const RC: Fixed = Fixed::from_bits((Self::RADIUS.to_bits() * 5) / 2);
+    const RC2: Fixed = fmulf(Self::RC, Self::RC);
+
+    fn draw(&self) {
+        draw_circle(
+            self.pos.x.to_num(),
+            self.pos.y.to_num(),
+            Self::RADIUS.to_num(),
+            DARKGREEN,
+        );
+    }
+    pub fn new(pos: FVec2, vel: FVec2) -> Self {
         Atom { pos, vel }
     }
 
@@ -72,31 +45,30 @@ impl<const R: usize> Atom<R> {
         self.pos += self.vel;
     }
 
-    pub fn get_force(&self, other: &Self) -> Option<Vec2> {
+    pub fn get_force(&self, other: &Self) -> Option<FVec2> {
         let diff = self.pos - other.pos;
-        let r2 = diff.length_squared();
+        let r2 = flength2(diff);
         if r2 < Self::RC2 {
             let f1 = Self::R2 / r2;
-            let f2 = f1.powi(3);
-            let df = f2 * f1 * (f2 - 1.0) - FC;
-            println!("{df}");
-            Some(df * diff.normalize())
+            let f2 = f1 * f1 * f1;
+            let df = f2 * f1 * fadd(f2, -1) - FC;
+            Some(diff / r2.sqrt() * df)
         } else {
             None
         }
     }
 
     pub fn generate(side: f32, offset: Vec2, sparsity: f32) -> Vec<Self> {
-        let dist = Self::DIAMETER * sparsity;
-        let side_n = (side / dist) as usize;
-        let mut arr = Vec::with_capacity(side_n * side_n);
-        let start = offset + Vec2::splat(Self::RADIUS);
+        let dist = Self::DIAMETER * Fixed::from_num(sparsity);
+        let side_n = (Fixed::from_num(side) / dist).to_num();
+        let mut arr = Vec::with_capacity((side_n * side_n) as usize);
+        let start = to_fvec2(offset) + FVec2::new(Self::RADIUS, Self::RADIUS);
         for i in 0..side_n {
             for j in 0..side_n {
                 let ampl = (-rand::gen_range::<f32>(0.0, 1.0).ln()).sqrt();
                 let angle = rand::gen_range(0.0, 2.0 * PI);
-                let vel = vec2(ampl * angle.cos(), ampl * angle.sin());
-                let pos = start + vec2(dist * i as f32, dist * j as f32);
+                let vel = fvec2(ampl * angle.cos(), ampl * angle.sin());
+                let pos = start + Vector2::new(fmul(dist, i), fmul(dist, j));
                 arr.push(Self::new(pos, vel));
             }
         }
