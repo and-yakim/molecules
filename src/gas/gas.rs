@@ -4,9 +4,8 @@ use super::*;
 
 type Particle = Atom<4>; // max 4
 const CELL: Fixed = Particle::RC;
-const SIZE: Fixed = fmul(CELL, 10); // 1k max (~1023 with 2 * CELL)
-
-const ACTUAL_SIZE: i32 = SIZE.to_bits() >> 21;
+const SIZE: Fixed = fmul(CELL, 20); // 1k max (~1023 with 2 * CELL)
+const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> 21;
 
 pub struct Gas {
     pub value: Vec<Particle>,
@@ -51,7 +50,6 @@ impl Gas {
                 .chain(self.system.arr[[self.system.side - 1, k]].iter())
                 .for_each(|i| {
                     self.value[*i].pos.x = Self::wrap_range(self.value[*i].pos.x);
-                    // println!("X {}\n", self.value[*i].pos.x);
                 });
             self.system.arr[[k, 0]]
                 .iter()

@@ -13,13 +13,15 @@ async fn main() {
         clear_background(DARKGRAY);
         set_camera(&camera);
 
-        gas.fix_bounds();
         gas.refresh_sys();
 
         // gas.force_gas();
         gas.move_gas();
 
         gas.draw();
+
+        set_default_camera();
+        draw_fps();
 
         if is_key_pressed(KeyCode::Escape) {
             break;

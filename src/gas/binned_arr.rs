@@ -24,10 +24,9 @@ impl<T> BinnedArr<T> {
     }
 
     pub fn get_coords(&self, pos: FVec2) -> [usize; 2] {
-        // println!("c {} {}", pos[0], pos[0].to_bits());
         [
-            (pos.x / self.cell).floor().to_num::<usize>() - 1,
-            (pos.y / self.cell).floor().to_num::<usize>() - 1,
+            ((pos.x - self.cell) / self.cell).floor().to_num::<usize>(),
+            ((pos.y - self.cell) / self.cell).floor().to_num::<usize>(),
         ]
     }
 
