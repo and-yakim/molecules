@@ -15,7 +15,7 @@ async fn main() {
 
         gas.refresh_sys();
 
-        // gas.force_gas();
+        gas.force_gas();
         gas.move_gas();
 
         gas.draw();

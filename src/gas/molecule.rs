@@ -45,8 +45,7 @@ impl<const R: usize> Atom<R> {
         self.pos += self.vel;
     }
 
-    pub fn get_force(&self, other: &Self) -> Option<FVec2> {
-        let diff = self.pos - other.pos;
+    fn diff_to_force(diff: FVec2) -> Option<FVec2> {
         let r2 = flength2(diff);
         if r2 < Self::RC2 {
             let f1 = Self::R2 / r2;
@@ -56,6 +55,14 @@ impl<const R: usize> Atom<R> {
         } else {
             None
         }
+    }
+
+    pub fn get_force(&self, other: &Self) -> Option<FVec2> {
+        Self::diff_to_force(self.pos - other.pos)
+    }
+
+    pub fn get_force_2(&self, other: &Self, offset: FVec2) -> Option<FVec2> {
+        Self::diff_to_force(self.pos - other.pos + offset)
     }
 
     pub fn generate(side: Fixed, offset: FVec2, sparsity: f32) -> Vec<Self> {
