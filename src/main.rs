@@ -9,14 +9,15 @@ async fn main() {
     println!("N: {}", gas.value.len());
     let camera = gas.system.get_camera();
 
-    gas.refresh_sys();
-
     loop {
         clear_background(DARKGRAY);
         set_camera(&camera);
 
-        gas.force_gas();
-        // gas.move_gas();
+        gas.fix_bounds();
+        gas.refresh_sys();
+
+        // gas.force_gas();
+        gas.move_gas();
 
         gas.draw();
 

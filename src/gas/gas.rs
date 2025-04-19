@@ -3,8 +3,10 @@ pub use super::molecule::*;
 use super::*;
 
 type Particle = Atom<4>; // max 4
-const SIZE: Fixed = to_fixed(1000); // max ~1023
 const CELL: Fixed = Particle::RC;
+const SIZE: Fixed = fmul(CELL, 10); // 1k max (~1023 with 2 * CELL)
+
+const ACTUAL_SIZE: i32 = SIZE.to_bits() >> 21;
 
 pub struct Gas {
     pub value: Vec<Particle>,
@@ -42,25 +44,29 @@ impl Gas {
     fn wrap_range(num: Fixed) -> Fixed {
         ((num - CELL) % SIZE + SIZE) % SIZE + CELL
     }
-    pub fn move_gas(&mut self) {
-        for mol in self.value.iter_mut() {
-            mol.move_pos();
-        }
-
+    pub fn fix_bounds(&mut self) {
         for k in 0..self.system.side {
-            self.system.arr[[k, 0]]
-                .iter()
-                .chain(self.system.arr[[k, self.system.side - 1]].iter())
-                .for_each(|i| {
-                    self.value[*i].pos.x = Self::wrap_range(self.value[*i].pos.x);
-                });
             self.system.arr[[0, k]]
                 .iter()
                 .chain(self.system.arr[[self.system.side - 1, k]].iter())
                 .for_each(|i| {
+                    self.value[*i].pos.x = Self::wrap_range(self.value[*i].pos.x);
+                    // println!("X {}\n", self.value[*i].pos.x);
+                });
+            self.system.arr[[k, 0]]
+                .iter()
+                .chain(self.system.arr[[k, self.system.side - 1]].iter())
+                .for_each(|i| {
                     self.value[*i].pos.y = Self::wrap_range(self.value[*i].pos.y);
                 });
         }
+    }
+
+    pub fn move_gas(&mut self) {
+        for mol in self.value.iter_mut() {
+            mol.move_pos();
+        }
+        self.fix_bounds();
     }
 
     pub fn draw(&self) {

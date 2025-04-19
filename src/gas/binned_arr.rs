@@ -12,7 +12,8 @@ pub struct BinnedArr<T> {
 
 impl<T> BinnedArr<T> {
     pub fn new(size: Fixed, cell: Fixed, n: usize) -> Self {
-        let side = (size / cell).ceil().to_num();
+        let side = (size / cell).to_num();
+        assert!(side > 2); // for corner_coords
         let estimate = n / (side * side) + 1;
         BinnedArr {
             arr: Array2::from_shape_fn((side, side), |_| Vec::with_capacity(estimate)),
@@ -23,6 +24,7 @@ impl<T> BinnedArr<T> {
     }
 
     pub fn get_coords(&self, pos: FVec2) -> [usize; 2] {
+        // println!("c {} {}", pos[0], pos[0].to_bits());
         [
             (pos.x / self.cell).floor().to_num::<usize>() - 1,
             (pos.y / self.cell).floor().to_num::<usize>() - 1,
