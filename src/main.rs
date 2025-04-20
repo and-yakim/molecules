@@ -21,8 +21,29 @@ const fn corner_coords(coords: [usize; 2]) -> [[usize; 2]; 4] {
 
 const OFFSET_TOP: FVec2 = FVec2::new(Fixed::ZERO, fmul(SIZE, -1));
 const OFFSET_BOTTOM: FVec2 = FVec2::new(Fixed::ZERO, SIZE);
+const OFFSET_RIGHT: FVec2 = FVec2::new(SIZE, SIZE);
 const OFFSET_TOP_RIGHT: FVec2 = FVec2::new(SIZE, fmul(SIZE, -1));
 const OFFSET_BOTTOM_RIGHT: FVec2 = FVec2::new(SIZE, SIZE);
+
+enum Offset {
+    Top,
+    Bottom,
+    Right,
+    TopRight,
+    BottomRight,
+}
+
+impl Offset {
+    fn to_fvec2(self) -> FVec2 {
+        match self {
+            Offset::Top => OFFSET_TOP,
+            Offset::Bottom => OFFSET_BOTTOM,
+            Offset::Right => OFFSET_RIGHT,
+            Offset::TopRight => OFFSET_TOP_RIGHT,
+            Offset::BottomRight => OFFSET_BOTTOM_RIGHT,
+        }
+    }
+}
 
 fn refresh_sys(matter: &Vec<Particle>, system: &mut BinnedArr<usize>) {
     system.clear();
@@ -49,14 +70,20 @@ where
     });
 }
 
-fn force_particles(matter: &mut Vec<Particle>, x: usize, y: usize) {
-    if let Some(force) = matter[x].get_force(&matter[y]) {
+type IndexPair = (usize, usize, Option<Offset>);
+
+fn force_pair(matter: &mut Vec<Particle>, (x, y, option): IndexPair) {
+    let result = match option {
+        Some(offset) => matter[x].get_force_2(&matter[y], offset.to_fvec2()),
+        None => matter[x].get_force(&matter[y]),
+    };
+    if let Some(force) = result {
         matter[x].vel += force;
         matter[y].vel -= force;
     }
 }
 
-fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
+fn iter_indexes<F: FnMut(IndexPair)>(system: &BinnedArr<usize>, mut f: F) {
     for i in 0..(system.side - 1) {
         for j in 1..(system.side - 1) {
             for coords in corner_coords([i, j]) {
@@ -77,6 +104,11 @@ fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
     // OFFSET_TOP_RIGHT
     let j = i;
     // OFFSET_BOTTOM_RIGHT
+}
+
+// do an iter of IndexPair
+fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
+    iter_indexes(system, |pair| force_pair(matter, pair));
 }
 
 /// [CELL, CELL + SIZE)
