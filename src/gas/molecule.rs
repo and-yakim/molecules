@@ -14,7 +14,9 @@ const fn pow_2_over_5(n: u32) -> i32 {
     result_bits
 }
 
-const FC: Fixed = Fixed::from_bits(pow_2_over_5(14) - pow_2_over_5(8)); // 0xfff4e000 -0.000652313
+const FC_: Fixed = Fixed::from_bits(pow_2_over_5(14) - pow_2_over_5(8)); // 0xfff4e000 -0.000652313
+const COEF: Fixed = to_fixed(1);
+const FC: Fixed = fmulf(COEF, FC_);
 
 pub struct Atom<const R: usize> {
     pub pos: FVec2,
@@ -51,7 +53,7 @@ impl<const R: usize> Atom<R> {
             let f1 = Self::R2 / r2;
             let f2 = f1 * f1 * f1;
             let df = f2 * f1 * fadd(f2, -1) - FC;
-            Some(diff / r2.sqrt() * df)
+            Some(diff / r2.sqrt() * COEF * df)
         } else {
             None
         }
