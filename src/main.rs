@@ -21,7 +21,7 @@ const fn corner_coords(coords: [usize; 2]) -> [[usize; 2]; 4] {
 
 const OFFSET_TOP: FVec2 = FVec2::new(Fixed::ZERO, fmul(SIZE, -1));
 const OFFSET_BOTTOM: FVec2 = FVec2::new(Fixed::ZERO, SIZE);
-const OFFSET_RIGHT: FVec2 = FVec2::new(SIZE, SIZE);
+const OFFSET_RIGHT: FVec2 = FVec2::new(SIZE, Fixed::ZERO);
 const OFFSET_TOP_RIGHT: FVec2 = FVec2::new(SIZE, fmul(SIZE, -1));
 const OFFSET_BOTTOM_RIGHT: FVec2 = FVec2::new(SIZE, SIZE);
 

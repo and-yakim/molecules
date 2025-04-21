@@ -64,7 +64,7 @@ impl<const R: usize> Atom<R> {
     }
 
     pub fn get_force_2(&self, other: &Self, offset: FVec2) -> Option<FVec2> {
-        Self::diff_to_force(self.pos - other.pos + offset)
+        Self::diff_to_force(self.pos - (other.pos + offset))
     }
 
     pub fn generate(side: Fixed, offset: FVec2, sparsity: f32) -> Vec<Self> {
