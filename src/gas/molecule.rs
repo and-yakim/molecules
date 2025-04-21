@@ -52,8 +52,8 @@ impl<const R: usize> Atom<R> {
         if r2 < Self::RC2 {
             let f1 = Self::R2 / r2;
             let f2 = f1 * f1 * f1;
-            let df = f2 * f1 * fadd(f2, -1) - FC;
-            Some(diff / r2.sqrt() * COEF * df)
+            let df = COEF * f2 * f1 * (f2 - Fixed::ONE) - FC;
+            Some(diff * df)
         } else {
             None
         }

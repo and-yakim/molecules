@@ -7,10 +7,21 @@ const CELL: Fixed = Particle::RC;
 const SIZE: Fixed = fmul(CELL, 20); // 1k max (~1023 with 2 * CELL)
 const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> 21;
 
-const fn corner_coords(coords: [usize; 2]) -> [[usize; 2]; 4] {
+const fn corner_coords_default(coords: [usize; 2]) -> [[usize; 2]; 4] {
     let next_i = coords[0] + 1;
     let next_j = coords[1] + 1;
-    let prev_j = coords[1] - 1;
+    [
+        [coords[0], next_j],
+        [next_i, next_j],
+        [next_i, coords[1]],
+        [next_i, coords[1] - 1],
+    ]
+}
+
+const fn corner_coords(coords: [usize; 2], side: usize) -> [[usize; 2]; 4] {
+    let next_i = (coords[0] + 1) % side;
+    let next_j = (coords[1] + 1) % side;
+    let prev_j = (coords[1] + side - 1) % side;
     [
         [coords[0], next_j],
         [next_i, next_j],
@@ -25,6 +36,7 @@ const OFFSET_RIGHT: FVec2 = FVec2::new(SIZE, Fixed::ZERO);
 const OFFSET_TOP_RIGHT: FVec2 = FVec2::new(SIZE, fmul(SIZE, -1));
 const OFFSET_BOTTOM_RIGHT: FVec2 = FVec2::new(SIZE, SIZE);
 
+#[derive(Clone, Copy)]
 enum Offset {
     Top,
     Bottom,
@@ -45,6 +57,8 @@ impl Offset {
     }
 }
 
+type IndexPair = (usize, usize, Option<Offset>);
+
 fn refresh_sys(matter: &Vec<Particle>, system: &mut BinnedArr<usize>) {
     system.clear();
     for (i, mol) in matter.iter().enumerate() {
@@ -52,30 +66,40 @@ fn refresh_sys(matter: &Vec<Particle>, system: &mut BinnedArr<usize>) {
     }
 }
 
-fn update_chunk<F: FnMut(usize, usize)>(system: &BinnedArr<usize>, coords: [usize; 2], mut f: F) {
-    for (i, index) in system.arr[coords].iter().enumerate() {
-        for j in (i + 1)..system.arr[coords].len() {
-            let other = system.arr[coords][j];
-            f(*index, other);
-        }
-    }
+fn get_chunk_iter(
+    system: &BinnedArr<usize>,
+    coords: [usize; 2],
+) -> impl Iterator<Item = IndexPair> {
+    system.arr[coords]
+        .iter()
+        .enumerate()
+        .flat_map(move |(i, index)| {
+            ((i + 1)..system.arr[coords].len()).map(move |j| {
+                let other = system.arr[coords][j];
+                (*index, other, None)
+            })
+        })
 }
 
-fn update_chunks_by_fn<F>(system: &BinnedArr<usize>, x: [usize; 2], y: [usize; 2], mut f: F)
-where
-    F: FnMut(usize, usize),
-{
-    system.arr[x].iter().for_each(|index| {
-        system.arr[y].iter().for_each(|other| f(*index, *other));
-    });
+fn get_chunks_iter(
+    system: &BinnedArr<usize>,
+    x: [usize; 2],
+    y: [usize; 2],
+    option: Option<Offset>,
+) -> impl Iterator<Item = IndexPair> {
+    system.arr[x].iter().flat_map(move |index| {
+        system.arr[y]
+            .iter()
+            .map(move |other| (*index, *other, option))
+    })
 }
-
-type IndexPair = (usize, usize, Option<Offset>);
 
 fn force_pair(matter: &mut Vec<Particle>, (x, y, option): IndexPair) {
     let result = match option {
-        Some(offset) => matter[x].get_force_2(&matter[y], offset.to_fvec2()),
-        None => matter[x].get_force(&matter[y]),
+        // Some(offset) => matter[x].get_force_2(&matter[y], offset.to_fvec2()),
+        // None => matter[x].get_force(&matter[y]),
+        Some(offset) => Some(fvec2(0.0, 0.0)),
+        None => Some(fvec2(0.0, 0.0)),
     };
     if let Some(force) = result {
         matter[x].vel += force;
@@ -83,32 +107,86 @@ fn force_pair(matter: &mut Vec<Particle>, (x, y, option): IndexPair) {
     }
 }
 
-fn iter_indexes<F: FnMut(IndexPair)>(system: &BinnedArr<usize>, mut f: F) {
+fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
     for i in 0..(system.side - 1) {
         for j in 1..(system.side - 1) {
-            for coords in corner_coords([i, j]) {
-                // update_chunk(system, [i, j], |x, y| force_particles(matter, x, y));
-                // update_chunks_by_fn(system, [i, j], coords, |x, y| force_particles(matter, x, y));
-            }
+            get_chunk_iter(system, [i, j])
+                .chain(
+                    corner_coords_default([i, j])
+                        .iter()
+                        .flat_map(|coords| get_chunks_iter(system, [i, j], *coords, None)),
+                )
+                .for_each(|pair| force_pair(matter, pair));
         }
     }
     for i in 0..(system.side - 1) {
         let j = 0;
-        // let corner = corner_coords([i, j]);
-        // OFFSET_TOP
+        let corner = corner_coords([i, j], system.side);
+        get_chunk_iter(system, [i, j])
+            .chain(
+                corner[..3]
+                    .iter()
+                    .flat_map(|coords| get_chunks_iter(system, [i, j], *coords, None)),
+            )
+            .chain(get_chunks_iter(
+                system,
+                [i, j],
+                corner[3],
+                Some(Offset::Top),
+            ))
+            .for_each(|pair| force_pair(matter, pair));
         let j = system.side - 1;
-        // let corner = corner_coords([i, j]);
-        // OFFSET_BOTTOM
+        let corner = corner_coords([i, j], system.side);
+        get_chunk_iter(system, [i, j])
+            .chain(
+                corner[2..4]
+                    .iter()
+                    .flat_map(|coords| get_chunks_iter(system, [i, j], *coords, None)),
+            )
+            .chain(
+                corner[..2].iter().flat_map(|coords| {
+                    get_chunks_iter(system, [i, j], *coords, Some(Offset::Bottom))
+                }),
+            )
+            .for_each(|pair| force_pair(matter, pair));
     }
     let [i, j] = [system.side - 1, 0];
-    // OFFSET_TOP_RIGHT
+    let corner = corner_coords([i, j], system.side);
+    get_chunk_iter(system, [i, j])
+        .chain(get_chunks_iter(system, [i, j], corner[0], None))
+        .chain(
+            corner[1..3]
+                .iter()
+                .flat_map(|coords| get_chunks_iter(system, [i, j], *coords, Some(Offset::Right))),
+        )
+        .chain(get_chunks_iter(
+            system,
+            [i, j],
+            corner[3],
+            Some(Offset::TopRight),
+        ))
+        .for_each(|pair| force_pair(matter, pair));
     let j = i;
-    // OFFSET_BOTTOM_RIGHT
-}
-
-// do an iter of IndexPair
-fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
-    iter_indexes(system, |pair| force_pair(matter, pair));
+    let corner = corner_coords([i, j], system.side);
+    get_chunk_iter(system, [i, j])
+        .chain(get_chunks_iter(
+            system,
+            [i, j],
+            corner[0],
+            Some(Offset::Bottom),
+        ))
+        .chain(get_chunks_iter(
+            system,
+            [i, j],
+            corner[1],
+            Some(Offset::BottomRight),
+        ))
+        .chain(
+            corner[..2]
+                .iter()
+                .flat_map(|coords| get_chunks_iter(system, [i, j], *coords, Some(Offset::Right))),
+        )
+        .for_each(|pair| force_pair(matter, pair));
 }
 
 /// [CELL, CELL + SIZE)
