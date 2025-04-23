@@ -109,61 +109,58 @@ fn force_pair(matter: &mut Vec<Particle>, (x, y, option): IndexPair) {
 }
 
 fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
-    for i in 0..(system.side - 1) {
-        for j in 1..(system.side - 1) {
-            iter_chunk(system, [i, j])
-                .chain(
+    (0..system.side - 1)
+        .flat_map(|i| {
+            (1..system.side - 1).flat_map(move |j| {
+                iter_chunk(system, [i, j]).chain(
                     get_corner_def([i, j])
-                        .iter()
-                        .flat_map(|coords| get_chunks_iter(system, [i, j], *coords, None)),
+                        .into_iter()
+                        .flat_map(move |coords| get_chunks_iter(system, [i, j], coords, None)),
                 )
-                .for_each(|pair| force_pair(matter, pair));
-        }
-    }
-    (0..(system.side - 1));
-    for i in 0..(system.side - 1) {
-        iter_chunk_fully(system, [i, 0], [None, None, None, Some(Offset::Top)])
-            .chain(iter_chunk_fully(
+            })
+        })
+        .chain((0..(system.side - 1)).flat_map(|i| {
+            iter_chunk_fully(system, [i, 0], [None, None, None, Some(Offset::Top)]).chain(
+                iter_chunk_fully(
+                    system,
+                    [i, system.side - 1],
+                    [Some(Offset::Bottom), Some(Offset::Bottom), None, None],
+                ),
+            )
+        }))
+        .chain((1..(system.side - 1)).flat_map(|j| {
+            iter_chunk_fully(
                 system,
-                [i, system.side - 1],
-                [Some(Offset::Bottom), Some(Offset::Bottom), None, None],
-            ))
-            .for_each(|pair| force_pair(matter, pair));
-    }
-    for j in 1..(system.side - 1) {
-        iter_chunk_fully(
+                [system.side - 1, j],
+                [
+                    None,
+                    Some(Offset::Right),
+                    Some(Offset::Right),
+                    Some(Offset::Right),
+                ],
+            )
+        }))
+        .chain(iter_chunk_fully(
             system,
-            [system.side - 1, j],
+            [system.side - 1, 0],
             [
                 None,
                 Some(Offset::Right),
                 Some(Offset::Right),
+                Some(Offset::TopRight),
+            ],
+        ))
+        .chain(iter_chunk_fully(
+            system,
+            [system.side - 1, system.side - 1],
+            [
+                Some(Offset::Bottom),
+                Some(Offset::BottomRight),
+                Some(Offset::Right),
                 Some(Offset::Right),
             ],
-        )
+        ))
         .for_each(|pair| force_pair(matter, pair));
-    }
-    iter_chunk_fully(
-        system,
-        [system.side - 1, 0],
-        [
-            None,
-            Some(Offset::Right),
-            Some(Offset::Right),
-            Some(Offset::TopRight),
-        ],
-    )
-    .chain(iter_chunk_fully(
-        system,
-        [system.side - 1, system.side - 1],
-        [
-            Some(Offset::Bottom),
-            Some(Offset::BottomRight),
-            Some(Offset::Right),
-            Some(Offset::Right),
-        ],
-    ))
-    .for_each(|pair| force_pair(matter, pair));
 }
 
 /// [CELL, CELL + SIZE)
