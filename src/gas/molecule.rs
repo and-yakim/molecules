@@ -2,19 +2,19 @@ use super::*;
 use std::f32::consts::PI;
 
 const fn pow_2_over_5(n: u32) -> i32 {
-    let base_bits = (2 << 21) / 5;
+    let base_bits = (2 << FRAC_BITS) / 5;
     let mut result_bits = base_bits;
     let mut i = 1;
 
     while i < n {
         let product = (result_bits as i64) * (base_bits as i64);
-        result_bits = ((product + (1 << 20)) >> 21) as i32;
+        result_bits = ((product + (1 << (FRAC_BITS - 1))) >> FRAC_BITS) as i32;
         i += 1;
     }
     result_bits
 }
 
-const FC_: Fixed = Fixed::from_bits(pow_2_over_5(14) - pow_2_over_5(8)); // 0xfff4e000 -0.000652313
+const FC_: Fixed = Fixed::from_bits(pow_2_over_5(14) - pow_2_over_5(8)); // -0.00066
 const COEF: Fixed = to_fixed(1);
 const FC: Fixed = fmulf(COEF, FC_);
 

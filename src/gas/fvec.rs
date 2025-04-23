@@ -1,10 +1,10 @@
 use super::*;
 
-/// +- 1k in f32
-pub type Fixed = I11F21;
+/// +- 32k in f32
+pub type Fixed = I16F16;
 pub type FVec2 = Vector2<Fixed>;
 
-pub const FRAC_BITS: i32 = 21;
+pub const FRAC_BITS: i32 = 16;
 
 pub const fn to_fixed(value: i32) -> Fixed {
     Fixed::from_bits(value << FRAC_BITS)
@@ -26,8 +26,8 @@ pub fn to_vec2(v: FVec2) -> Vec2 {
     Vec2::new(v.x.to_num(), v.y.to_num())
 }
 
-/// for distance below 32.0
-/// or Atom<R < 4.525>
+/// for distance below 181.0
+/// or Atom<R < 22.625>
 pub fn fdistance(a: FVec2, b: FVec2) -> Fixed {
     let dx = a.x - b.x;
     let dy = a.y - b.y;
