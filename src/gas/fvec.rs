@@ -4,8 +4,10 @@ use super::*;
 pub type Fixed = I11F21;
 pub type FVec2 = Vector2<Fixed>;
 
+pub const FRAC_BITS: i32 = 21;
+
 pub const fn to_fixed(value: i32) -> Fixed {
-    Fixed::from_bits(value << 21)
+    Fixed::from_bits(value << FRAC_BITS)
 }
 
 pub const fn usize_to_fixed(value: usize) -> Fixed {
@@ -39,7 +41,7 @@ pub fn flength2(v: FVec2) -> Fixed {
 // for Atom<R> constants
 
 pub const fn fadd(a: Fixed, b: i32) -> Fixed {
-    let fb = (b as i32) << 21;
+    let fb = (b as i32) << FRAC_BITS;
     Fixed::from_bits(a.to_bits() + fb)
 }
 
@@ -52,7 +54,7 @@ pub const fn fmul(a: Fixed, b: i32) -> Fixed {
 }
 
 pub const fn fmulf(a: Fixed, b: Fixed) -> Fixed {
-    Fixed::from_bits(((a.to_bits() as i64 * b.to_bits() as i64) >> 21) as i32)
+    Fixed::from_bits(((a.to_bits() as i64 * b.to_bits() as i64) >> FRAC_BITS) as i32)
 }
 
 pub const fn fdiv(a: Fixed, b: i32) -> Fixed {

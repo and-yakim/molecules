@@ -5,7 +5,7 @@ use molecules::*;
 type Particle = Atom<4>; // max 4
 const CELL: Fixed = Particle::RC;
 const SIZE: Fixed = fmul(CELL, 20); // ~1023 max (with 2 * CELL)
-const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> 21; // 500 max
+const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> FRAC_BITS;
 
 fn get_corner_def(coords: [usize; 2]) -> [[usize; 2]; 4] {
     let next_i = coords[0] + 1;
@@ -165,7 +165,7 @@ fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
 
 /// [CELL, CELL + SIZE)
 fn wrap_range(num: Fixed) -> Fixed {
-    ((num - CELL) % SIZE + SIZE) % SIZE + CELL
+    ((num - CELL) % SIZE).rem_euclid(SIZE) + CELL
 }
 
 fn handle_new<const X: bool>(matter: &mut Vec<Particle>, i: usize, offset: Offset) {

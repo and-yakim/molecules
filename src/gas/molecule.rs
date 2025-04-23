@@ -84,7 +84,7 @@ impl<const R: usize> Atom<R> {
         let start = offset + FVec2::new(Self::RADIUS, Self::RADIUS);
         for i in 0..side_n {
             for j in 0..side_n {
-                let ampl = (-rand::gen_range::<f32>(0.0, 1.0).ln()).sqrt() / 100.0;
+                let ampl = (-rand::gen_range::<f32>(0.0, 1.0).ln()).sqrt() / 10.0;
                 let angle = rand::gen_range(0.0, 2.0 * PI);
                 let vel = fvec2(ampl * angle.cos(), ampl * angle.sin());
                 let pos = start + FVec2::new(fmul(dist, i), fmul(dist, j));
