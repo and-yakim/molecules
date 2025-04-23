@@ -120,23 +120,20 @@ fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
                 .for_each(|pair| force_pair(matter, pair));
         }
     }
+    (0..(system.side - 1));
     for i in 0..(system.side - 1) {
-        let j = 0;
-        iter_chunk_fully(system, [i, j], [None, None, None, Some(Offset::Top)])
+        iter_chunk_fully(system, [i, 0], [None, None, None, Some(Offset::Top)])
+            .chain(iter_chunk_fully(
+                system,
+                [i, system.side - 1],
+                [Some(Offset::Bottom), Some(Offset::Bottom), None, None],
+            ))
             .for_each(|pair| force_pair(matter, pair));
-        let j = system.side - 1;
-        iter_chunk_fully(
-            system,
-            [i, j],
-            [Some(Offset::Bottom), Some(Offset::Bottom), None, None],
-        )
-        .for_each(|pair| force_pair(matter, pair));
     }
     for j in 1..(system.side - 1) {
-        let i = system.side - 1;
         iter_chunk_fully(
             system,
-            [i, j],
+            [system.side - 1, j],
             [
                 None,
                 Some(Offset::Right),
@@ -146,10 +143,9 @@ fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
         )
         .for_each(|pair| force_pair(matter, pair));
     }
-    let [i, j] = [system.side - 1, 0];
     iter_chunk_fully(
         system,
-        [i, j],
+        [system.side - 1, 0],
         [
             None,
             Some(Offset::Right),
@@ -157,18 +153,16 @@ fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
             Some(Offset::TopRight),
         ],
     )
-    .for_each(|pair| force_pair(matter, pair));
-    let j = i;
-    iter_chunk_fully(
+    .chain(iter_chunk_fully(
         system,
-        [i, j],
+        [system.side - 1, system.side - 1],
         [
             Some(Offset::Bottom),
             Some(Offset::BottomRight),
             Some(Offset::Right),
             Some(Offset::Right),
         ],
-    )
+    ))
     .for_each(|pair| force_pair(matter, pair));
 }
 
