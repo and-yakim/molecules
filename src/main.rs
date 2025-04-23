@@ -4,8 +4,8 @@ use molecules::*;
 
 type Particle = Atom<4>; // max 4
 const CELL: Fixed = Particle::RC;
-const SIZE: Fixed = fmul(CELL, 20); // 1k max (~1023 with 2 * CELL)
-const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> 21;
+const SIZE: Fixed = fmul(CELL, 20); // ~1023 max (with 2 * CELL)
+const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> 21; // 500 max
 
 fn get_corner_def(coords: [usize; 2]) -> [[usize; 2]; 4] {
     let next_i = coords[0] + 1;
@@ -34,6 +34,7 @@ fn get_corner(coords: [usize; 2], side: usize) -> [[usize; 2]; 4] {
 enum Offset {
     Top,
     Bottom,
+    Left,
     Right,
     TopRight,
     BottomRight,
@@ -44,6 +45,7 @@ impl Offset {
         match self {
             Offset::Top => FVec2::new(Fixed::ZERO, fmul(SIZE, -1)),
             Offset::Bottom => FVec2::new(Fixed::ZERO, SIZE),
+            Offset::Left => FVec2::new(fmul(SIZE, -1), Fixed::ZERO),
             Offset::Right => FVec2::new(SIZE, Fixed::ZERO),
             Offset::TopRight => FVec2::new(SIZE, fmul(SIZE, -1)),
             Offset::BottomRight => FVec2::new(SIZE, SIZE),
@@ -52,13 +54,6 @@ impl Offset {
 }
 
 type IndexPair = (usize, usize, Option<Offset>);
-
-fn refresh_sys(matter: &Vec<Particle>, system: &mut BinnedArr<usize>) {
-    system.clear();
-    for (i, mol) in matter.iter().enumerate() {
-        system.add(mol.pos, i);
-    }
-}
 
 fn iter_chunk(system: &BinnedArr<usize>, coords: [usize; 2]) -> impl Iterator<Item = IndexPair> {
     system.arr[coords]
@@ -181,28 +176,48 @@ fn force_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
 fn wrap_range(num: Fixed) -> Fixed {
     ((num - CELL) % SIZE + SIZE) % SIZE + CELL
 }
-fn fix_bounds(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
-    for k in 0..system.side {
-        system.arr[[0, k]]
-            .iter()
-            .chain(system.arr[[system.side - 1, k]].iter())
-            .for_each(|i| {
-                matter[*i].pos.x = wrap_range(matter[*i].pos.x);
-            });
-        system.arr[[k, 0]]
-            .iter()
-            .chain(system.arr[[k, system.side - 1]].iter())
-            .for_each(|i| {
-                matter[*i].pos.y = wrap_range(matter[*i].pos.y);
-            });
+
+fn handle_new<const X: bool>(matter: &mut Vec<Particle>, i: usize, offset: Offset) {
+    let coord = if X {
+        &mut matter[i].pos.x
+    } else {
+        &mut matter[i].pos.y
+    };
+    let old_value = *coord;
+    *coord = wrap_range(old_value);
+    if *coord == old_value {
+        matter[i].draw_offset(offset.to_fvec2());
     }
 }
 
-fn move_gas(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
+fn fix_bounds(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
+    for k in 0..system.side {
+        system.arr[[0, k]].iter().for_each(|i| {
+            handle_new::<true>(matter, *i, Offset::Right);
+        });
+        system.arr[[system.side - 1, k]].iter().for_each(|i| {
+            handle_new::<true>(matter, *i, Offset::Left);
+        });
+        system.arr[[k, 0]].iter().for_each(|i| {
+            handle_new::<false>(matter, *i, Offset::Bottom);
+        });
+        system.arr[[k, system.side - 1]].iter().for_each(|i| {
+            handle_new::<false>(matter, *i, Offset::Top);
+        });
+    }
+}
+
+fn refresh_sys(matter: &Vec<Particle>, system: &mut BinnedArr<usize>) {
+    system.clear();
+    for (i, mol) in matter.iter().enumerate() {
+        system.add(mol.pos, i);
+    }
+}
+
+fn move_gas(matter: &mut Vec<Particle>) {
     for mol in matter.iter_mut() {
         mol.move_pos();
     }
-    fix_bounds(matter, system);
 }
 
 fn draw(matter: &mut Vec<Particle>) {
@@ -225,8 +240,9 @@ async fn main() {
         refresh_sys(&matter, &mut system);
 
         force_gas(&mut matter, &system);
-        move_gas(&mut matter, &system);
+        move_gas(&mut matter);
 
+        fix_bounds(&mut matter, &system);
         draw(&mut matter);
 
         set_default_camera();

@@ -39,6 +39,16 @@ impl<const R: usize> Atom<R> {
             DARKGREEN,
         );
     }
+    pub fn draw_offset(&self, offset: FVec2) {
+        let new_pos = self.pos + offset;
+        draw_circle(
+            new_pos.x.to_num(),
+            new_pos.y.to_num(),
+            Self::RADIUS.to_num(),
+            DARKGREEN,
+        );
+    }
+
     pub fn new(pos: FVec2, vel: FVec2) -> Self {
         Atom { pos, vel }
     }
