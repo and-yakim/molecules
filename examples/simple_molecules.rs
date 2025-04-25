@@ -1,9 +1,10 @@
+use init::*;
 use molecules::gas::*;
 use molecules::*;
 
-type Particle = Atom<4>; // max 22
+type Particle = Atom<20>; // max 22
 const CELL: Fixed = Particle::RC;
-const SIZE: Fixed = fmul(CELL, 800); // ~32k max (with 2 * CELL)
+const SIZE: Fixed = fmul(CELL, 20); // ~32k max (with 2 * CELL)
 const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> FRAC_BITS;
 
 fn get_corner_def(coords: [usize; 2]) -> [[usize; 2]; 4] {
@@ -167,20 +168,33 @@ fn wrap_range(num: Fixed) -> Fixed {
     ((num - CELL) % SIZE).rem_euclid(SIZE) + CELL
 }
 
+fn handle_new<const X: bool>(matter: &mut Vec<Particle>, i: usize, offset: Offset) {
+    let coord = if X {
+        &mut matter[i].pos.x
+    } else {
+        &mut matter[i].pos.y
+    };
+    let old_value = *coord;
+    *coord = wrap_range(old_value);
+    if *coord == old_value {
+        matter[i].draw_offset(offset.to_fvec2());
+    }
+}
+
 fn fix_bounds(matter: &mut Vec<Particle>, system: &BinnedArr<usize>) {
     for k in 0..system.side {
-        system.arr[[0, k]]
-            .iter()
-            .chain(system.arr[[system.side - 1, k]].iter())
-            .for_each(|i| {
-                matter[*i].pos.x = wrap_range(matter[*i].pos.x);
-            });
-        system.arr[[k, 0]]
-            .iter()
-            .chain(system.arr[[k, system.side - 1]].iter())
-            .for_each(|i| {
-                matter[*i].pos.y = wrap_range(matter[*i].pos.y);
-            });
+        system.arr[[0, k]].iter().for_each(|i| {
+            handle_new::<true>(matter, *i, Offset::Right);
+        });
+        system.arr[[system.side - 1, k]].iter().for_each(|i| {
+            handle_new::<true>(matter, *i, Offset::Left);
+        });
+        system.arr[[k, 0]].iter().for_each(|i| {
+            handle_new::<false>(matter, *i, Offset::Bottom);
+        });
+        system.arr[[k, system.side - 1]].iter().for_each(|i| {
+            handle_new::<false>(matter, *i, Offset::Top);
+        });
     }
 }
 
@@ -197,28 +211,37 @@ fn move_gas(matter: &mut Vec<Particle>) {
     }
 }
 
-fn main() {
-    if let Ok(n) = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH) {
-        rand::srand(n.as_secs());
-    }
-    let instant = time::Instant::now();
+fn draw(matter: &mut Vec<Particle>) {
+    matter.iter().for_each(Atom::draw);
+}
 
+#[macroquad::main("Molecules")]
+async fn main() {
+    init();
     let mut matter = Particle::generate(SIZE, FVec2::new(CELL, CELL), 1.0);
     let mut system = BinnedArr::<usize>::new(SIZE, CELL, matter.len());
 
-    println!("N: {}k", matter.len() / 1000);
-    println!("Init: {} ms\n", instant.elapsed().as_millis());
+    println!("N: {}", matter.len());
+    let camera = system.get_camera();
 
-    let mut frame = time::Instant::now();
-    while instant.elapsed().as_secs() < 5 {
+    loop {
+        clear_background(DARKGRAY);
+        set_camera(&camera);
+
         refresh_sys(&matter, &mut system);
 
         force_gas(&mut matter, &system);
         move_gas(&mut matter);
 
         fix_bounds(&mut matter, &system);
+        draw(&mut matter);
 
-        println!("{} ms", frame.elapsed().as_millis());
-        frame = time::Instant::now();
+        set_default_camera();
+        draw_fps();
+
+        if is_key_pressed(KeyCode::Escape) {
+            break;
+        }
+        next_frame().await;
     }
 }
