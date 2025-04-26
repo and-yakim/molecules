@@ -33,7 +33,6 @@ fn get_corner(coords: [usize; 2], side: usize) -> [[usize; 2]; 4] {
 enum Offset {
     Top,
     Bottom,
-    Left,
     Right,
     TopRight,
     BottomRight,
@@ -44,7 +43,6 @@ impl Offset {
         match self {
             Offset::Top => FVec2::new(Fixed::ZERO, fmul(SIZE, -1)),
             Offset::Bottom => FVec2::new(Fixed::ZERO, SIZE),
-            Offset::Left => FVec2::new(fmul(SIZE, -1), Fixed::ZERO),
             Offset::Right => FVec2::new(SIZE, Fixed::ZERO),
             Offset::TopRight => FVec2::new(SIZE, fmul(SIZE, -1)),
             Offset::BottomRight => FVec2::new(SIZE, SIZE),
@@ -207,7 +205,7 @@ fn main() {
     let mut system = BinnedArr::<usize>::new(SIZE, CELL, matter.len());
 
     println!("N: {}k", matter.len() / 1000);
-    println!("Init: {} ms\n", instant.elapsed().as_millis());
+    println!("Init: {} ms", instant.elapsed().as_millis());
 
     let mut frame = time::Instant::now();
     while instant.elapsed().as_secs() < 5 {
