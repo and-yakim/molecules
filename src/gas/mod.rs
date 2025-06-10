@@ -8,6 +8,6 @@ pub use macroquad::prelude::*;
 pub use nalgebra::Vector2;
 
 pub use binned_arr::*;
-pub use fsimd::*;
+// pub use fsimd::*;
 pub use fvec::*;
 pub use molecule::*;

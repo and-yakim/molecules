@@ -70,6 +70,17 @@ impl<const R: usize> Atom<R> {
     }
 
     pub fn get_force(&self, other: &Self) -> Option<FVec2> {
+        // let diff = ;
+        // unsafe {
+        //     let a = load_fvec2x2(vectors.as_ptr());
+        //     let b = load_fvec2x2(vectors.as_ptr().add(2));
+
+        //     let sum = fvec2x2_add(a, b);
+        //     let product = fvec2x2_mul(a, b);
+        //     let quotient = fvec2x2_div(a, b);
+
+        //     store_fvec2x2(vectors.as_mut_ptr(), sum);
+        // }
         Self::diff_to_force(self.pos - other.pos)
     }
 
