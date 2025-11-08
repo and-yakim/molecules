@@ -1,10 +1,9 @@
-use init::*;
 use molecules::gas::*;
 use molecules::*;
 
-type Particle = Atom<20>; // max 22
+type Particle = Atom<4>; // max 22
 const CELL: Fixed = Particle::RC;
-const SIZE: Fixed = fmul(CELL, 20); // ~32k max (with 2 * CELL)
+const SIZE: Fixed = fmul(CELL, 800); // ~32k max (with 2 * CELL)
 const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> FRAC_BITS;
 
 fn get_corner_def(coords: [usize; 2]) -> [[usize; 2]; 4] {
@@ -196,37 +195,28 @@ fn move_gas(matter: &mut Vec<Particle>) {
     }
 }
 
-fn draw(matter: &mut Vec<Particle>) {
-    matter.iter().for_each(Atom::draw);
-}
+fn main() {
+    if let Ok(n) = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH) {
+        rand::srand(n.as_secs());
+    }
+    let instant = time::Instant::now();
 
-#[macroquad::main("Molecules")]
-async fn main() {
-    init();
     let mut matter = Particle::generate(SIZE, FVec2::new(CELL, CELL), 1.0);
     let mut system = BinnedArr::<usize>::new(SIZE, CELL, matter.len());
 
-    println!("N: {}", matter.len());
-    let camera = system.get_camera();
+    println!("N: {:.1}M", matter.len() as f32 / 1_000_000f32);
+    println!("Init: {} ms", instant.elapsed().as_millis());
 
-    loop {
-        clear_background(DARKGRAY);
-        set_camera(&camera);
-
+    let mut frame = time::Instant::now();
+    while instant.elapsed().as_secs() < 1 {
         refresh_sys(&matter, &mut system);
 
         force_gas(&mut matter, &system);
         move_gas(&mut matter);
 
         fix_bounds(&mut matter, &system);
-        draw(&mut matter);
 
-        set_default_camera();
-        draw_fps();
-
-        if is_key_pressed(KeyCode::Escape) {
-            break;
-        }
-        next_frame().await;
+        println!("{} ms", frame.elapsed().as_millis());
+        frame = time::Instant::now();
     }
 }
