@@ -7,3 +7,5 @@ pub mod gas;
 pub mod init;
 pub mod soft_body;
 pub mod spring;
+
+pub use init::*;

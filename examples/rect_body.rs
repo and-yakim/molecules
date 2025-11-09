@@ -1,4 +1,3 @@
-use molecules::init::*;
 use molecules::soft_body::*;
 use molecules::*;
 
