@@ -60,3 +60,10 @@ pub const fn fmulf(a: Fixed, b: Fixed) -> Fixed {
 pub const fn fdiv(a: Fixed, b: i32) -> Fixed {
     Fixed::from_bits((a.to_bits() as i64 / b as i64) as i32)
 }
+
+pub const fn fdivf(a: Fixed, b: Fixed) -> Fixed {
+    let a_bits = a.to_bits() as i64;
+    let b_bits = b.to_bits() as i64;
+    let result_bits = (a_bits << FRAC_BITS) / b_bits;
+    Fixed::from_bits(result_bits as i32)
+}

@@ -14,7 +14,7 @@ impl<T> BinnedArr<T> {
     pub fn new(size: Fixed, cell: Fixed, n: usize) -> Self {
         let side = (size / cell).to_num();
         assert!(side > 2); // for corner_coords
-        let estimate = n / (side * side) + 1;
+        let estimate = 4; // most memory efficient
         BinnedArr {
             arr: Array2::from_shape_fn((side, side), |_| Vec::with_capacity(estimate)),
             size,

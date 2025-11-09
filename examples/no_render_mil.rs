@@ -3,8 +3,8 @@ use molecules::*;
 
 type Particle = Atom<4>; // max 22
 const CELL: Fixed = Particle::RC;
-const SIZE: Fixed = fmul(CELL, 800); // ~32k max (with 2 * CELL)
-const _ACTUAL_SIZE: i32 = SIZE.to_bits() >> FRAC_BITS;
+const SIZE: Fixed = to_fixed(8000); // ~32k max (with 2 * CELL)
+const _: () = assert!(fmulf(fdivf(SIZE, CELL), CELL).to_bits() == SIZE.to_bits());
 
 fn get_corner_def(coords: [usize; 2]) -> [[usize; 2]; 4] {
     let next_i = coords[0] + 1;
