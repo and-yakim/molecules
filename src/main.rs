@@ -1,30 +1,38 @@
 use molecules::gas::*;
 use molecules::*;
 
-#[macroquad::main("Molecules")]
-async fn main() {
-    init();
-    let mut system = System::<20>::new(1000);
+fn main() {
+    if let Ok(n) = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH) {
+        rand::srand(n.as_secs());
+    }
+    let instant = time::Instant::now();
 
-    println!("N: {}", system.matter.len());
-    let camera = system.container.get_camera();
+    let mut system = System::<4>::new(8000);
 
-    loop {
-        clear_background(DARKGRAY);
-        set_camera(&camera);
+    println!("N: {:.1}M", system.matter.len() as f32 / 1_000_000f32);
+    println!("Init: {} ms", instant.elapsed().as_millis());
 
+    let mut frame = time::Instant::now();
+    let mut timings = [0u128; 4];
+    while instant.elapsed().as_secs() < 5 {
         system.refresh_container();
+        let elapsed0 = frame.elapsed().as_micros();
+        timings[0] = elapsed0;
         system.force_gas();
+        let elapsed1 = frame.elapsed().as_micros();
+        timings[1] = elapsed1 - elapsed0;
         system.move_gas();
+        let elapsed2 = frame.elapsed().as_micros();
+        timings[2] = elapsed2 - elapsed1;
         system.fix_bounds();
+        let elapsed3 = frame.elapsed().as_micros();
+        timings[3] = elapsed3 - elapsed2;
 
-        system.draw();
-        set_default_camera();
-        draw_fps();
-
-        if is_key_pressed(KeyCode::Escape) {
-            break;
-        }
-        next_frame().await;
+        println!("{} ms, {:?} µs", frame.elapsed().as_millis(), timings);
+        frame = time::Instant::now();
     }
 }
+
+// Vec      ~ 2400µs
+// SmallVec ~ 3400µs
+// ArrayVec ~ 2900µs
