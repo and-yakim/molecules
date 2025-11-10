@@ -202,7 +202,7 @@ fn main() {
     let instant = time::Instant::now();
 
     let mut matter = Particle::generate(SIZE, FVec2::new(CELL, CELL), 1.0);
-    let mut system = BinnedArr::<usize>::new(SIZE, CELL, matter.len());
+    let mut system = BinnedArr::<usize>::new(SIZE, CELL);
 
     println!("N: {:.1}M", matter.len() as f32 / 1_000_000f32);
     println!("Init: {} ms", instant.elapsed().as_millis());

@@ -203,7 +203,7 @@ fn draw(matter: &mut Vec<Particle>) {
 async fn main() {
     init();
     let mut matter = Particle::generate(SIZE, FVec2::new(CELL, CELL), 1.0);
-    let mut system = BinnedArr::<usize>::new(SIZE, CELL, matter.len());
+    let mut system = BinnedArr::<usize>::new(SIZE, CELL);
 
     println!("N: {}", matter.len());
     let camera = system.get_camera();

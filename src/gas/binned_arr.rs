@@ -11,7 +11,7 @@ pub struct BinnedArr<T> {
 }
 
 impl<T> BinnedArr<T> {
-    pub fn new(size: Fixed, cell: Fixed, n: usize) -> Self {
+    pub fn new(size: Fixed, cell: Fixed) -> Self {
         let side = (size / cell).to_num();
         assert!(side > 2); // for corner_coords
         let estimate = 4; // most memory efficient
