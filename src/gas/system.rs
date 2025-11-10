@@ -1,9 +1,8 @@
-// #![allow(unused)]
 use super::*;
 
 pub struct System<const R: usize> {
-    matter: Vec<Atom<R>>,
-    container: BinnedArr<usize>,
+    pub matter: Vec<Atom<R>>,
+    pub container: BinnedArr<usize>,
 }
 
 fn get_corner_def(coords: [usize; 2]) -> [[usize; 2]; 4] {
@@ -110,7 +109,7 @@ impl<const R: usize> System<R> {
         Self { matter, container }
     }
 
-    pub fn refresh_sys(&mut self) {
+    pub fn refresh_container(&mut self) {
         self.container.clear();
         for (i, mol) in self.matter.iter().enumerate() {
             self.container.add(mol.pos, i);
@@ -213,5 +212,9 @@ impl<const R: usize> System<R> {
                     matter[*i].pos.y = Self::wrap_range(matter[*i].pos.y, size);
                 });
         }
+    }
+
+    pub fn draw(&self) {
+        self.matter.iter().for_each(Atom::draw);
     }
 }
