@@ -36,7 +36,10 @@ impl<const R: usize> Atom<R> {
             self.pos.x.to_num(),
             self.pos.y.to_num(),
             Self::RADIUS.to_num(),
-            DARKGREEN,
+            Color {
+                a: 0.8,
+                ..DARKGREEN
+            },
         );
     }
     pub fn draw_offset(&self, offset: FVec2) {

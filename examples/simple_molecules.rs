@@ -10,7 +10,7 @@ async fn main() {
     let camera = system.container.get_camera();
 
     loop {
-        clear_background(DARKGRAY);
+        clear_background(LIGHTGRAY);
         set_camera(&camera);
 
         system.refresh_container();
@@ -24,6 +24,15 @@ async fn main() {
 
         if is_key_pressed(KeyCode::Escape) {
             break;
+        }
+        if is_key_pressed(KeyCode::Down) {
+            for mol in &mut system.matter {
+                mol.vel *= Fixed::from_bits(1 << (FRAC_BITS - 1));
+            }
+        } else if is_key_pressed(KeyCode::Up) {
+            for mol in &mut system.matter {
+                mol.vel *= Fixed::from_bits(2 << FRAC_BITS);
+            }
         }
         next_frame().await;
     }
