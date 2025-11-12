@@ -1,10 +1,10 @@
-use molecules::gas::*;
+use raylib::prelude::*;
 
 fn main() {
-    let number = to_fixed(100);
-    println!("{}", fdiv(number, 5).to_bits() as i64 >> FRAC_BITS);
-    println!(
-        "{}",
-        fdivf(number, to_fixed(5)).to_bits() as i64 >> FRAC_BITS
-    );
+    // | grep -v '^INFO'
+    let (mut rl, thread) = raylib::init().size(800, 800).title("Molecules").build();
+
+    while !rl.window_should_close() {
+        let mut d = rl.begin_drawing(&thread);
+    }
 }
