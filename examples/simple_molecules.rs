@@ -1,17 +1,17 @@
 use molecules::gas::*;
 use molecules::*;
 
-#[macroquad::main("Molecules")]
-async fn main() {
-    init();
+fn main() {
+    // | grep -v '^INFO'
+    let (mut rl, thread) = raylib::init().size(800, 800).title("Molecules").build();
+
     let mut system = System::<20>::new(1000);
 
     println!("N: {}", system.matter.len());
-    let camera = system.container.get_camera();
 
-    loop {
-        clear_background(LIGHTGRAY);
-        set_camera(&camera);
+    while !rl.window_should_close() {
+        let mut d = rl.begin_drawing(&thread);
+        d.clear_background(Color::GRAY);
 
         system.refresh_container();
         system.force_gas();
@@ -19,21 +19,18 @@ async fn main() {
         system.fix_bounds();
 
         system.draw();
-        set_default_camera();
-        draw_fps();
 
-        if is_key_pressed(KeyCode::Escape) {
+        if rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
             break;
         }
-        if is_key_pressed(KeyCode::Down) {
+        if rl.is_key_pressed(KeyboardKey::KEY_DOWN) {
             for mol in &mut system.matter {
                 mol.vel *= Fixed::from_bits(1 << (FRAC_BITS - 1));
             }
-        } else if is_key_pressed(KeyCode::Up) {
+        } else if rl.is_key_pressed(KeyboardKey::KEY_UP) {
             for mol in &mut system.matter {
                 mol.vel *= Fixed::from_bits(2 << FRAC_BITS);
             }
         }
-        next_frame().await;
     }
 }

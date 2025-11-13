@@ -1,7 +1,6 @@
-pub use macroquad::prelude::*;
+pub use glam::{Vec2, Vec3, vec2};
+pub use quad_rand;
 pub use std::time;
-
-pub const DEBUG_RED: Color = Color { a: 0.5, ..RED };
 
 pub mod gas;
 pub mod init;
