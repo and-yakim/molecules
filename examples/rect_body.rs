@@ -1,3 +1,4 @@
+/*
 use molecules::soft_body::*;
 use molecules::*;
 
@@ -46,3 +47,4 @@ async fn main() {
         next_frame().await;
     }
 }
+ */

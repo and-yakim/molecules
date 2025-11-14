@@ -2,9 +2,7 @@ use molecules::gas::*;
 use molecules::*;
 
 fn main() {
-    if let Ok(n) = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH) {
-        rand::srand(n.as_secs());
-    }
+    init_rand();
     let instant = time::Instant::now();
 
     let mut system = System::<4>::new(8000);
