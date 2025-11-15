@@ -48,3 +48,5 @@ async fn main() {
     }
 }
  */
+
+fn main() {}

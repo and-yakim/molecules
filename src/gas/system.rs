@@ -214,7 +214,7 @@ impl<const R: usize> System<R> {
         }
     }
 
-    pub fn draw(&self) {
-        self.matter.iter().for_each(Atom::draw);
+    pub fn draw(&self, d: &mut RaylibDrawHandle<'_>) {
+        self.matter.iter().for_each(|atom| atom.draw(d));
     }
 }

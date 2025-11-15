@@ -39,19 +39,31 @@ impl<T> BinnedArr<T> {
         self.arr.iter_mut().for_each(Vec::clear);
     }
 
-    // pub fn draw(&self) {
-    //     let cell = self.cell.to_num();
-    //     for i in 0..self.side {
-    //         for j in 0..self.side {
-    //             draw_rectangle_lines(
-    //                 (i + 1) as f32 * cell,
-    //                 (j + 1) as f32 * cell,
-    //                 cell,
-    //                 cell,
-    //                 2.0,
-    //                 RED,
-    //             );
-    //         }
-    //     }
-    // }
+    pub fn get_camera(&self, width: f32) -> Camera2D {
+        let zoom = width / self.size.to_num::<f32>();
+        let offset = -zoom * self.cell.to_num::<f32>();
+        Camera2D {
+            offset: math::Vector2::new(offset, offset),
+            zoom: zoom,
+            ..Default::default()
+        }
+    }
+
+    pub fn draw(&self, d: &mut RaylibDrawHandle<'_>) {
+        let cell = self.cell.to_num();
+        for i in 0..self.side {
+            for j in 0..self.side {
+                d.draw_rectangle_lines_ex(
+                    math::Rectangle {
+                        x: (i + 1) as f32 * cell,
+                        y: (j + 1) as f32 * cell,
+                        width: cell,
+                        height: cell,
+                    },
+                    2.0,
+                    Color::RED,
+                );
+            }
+        }
+    }
 }

@@ -26,6 +26,14 @@ pub fn to_vec2(v: FVec2) -> Vec2 {
     Vec2::new(v.x.to_num(), v.y.to_num())
 }
 
+/// raylib helper
+pub fn to_vector2(v: FVec2) -> math::Vector2 {
+    math::Vector2 {
+        x: v.x.to_num(),
+        y: v.y.to_num(),
+    }
+}
+
 /// for distance below 181.0
 /// or Atom<R < 22.625>
 pub fn fdistance(a: FVec2, b: FVec2) -> Fixed {

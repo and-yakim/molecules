@@ -31,24 +31,11 @@ impl<const R: usize> Atom<R> {
     pub const RC: Fixed = Fixed::from_bits((Self::RADIUS.to_bits() * 5) / 2);
     const RC2: Fixed = fmulf(Self::RC, Self::RC);
 
-    pub fn draw(&self) {
-        draw_circle(
-            self.pos.x.to_num(),
-            self.pos.y.to_num(),
+    pub fn draw(&self, d: &mut RaylibDrawHandle<'_>) {
+        d.draw_circle_v(
+            to_vector2(self.pos),
             Self::RADIUS.to_num(),
-            Color {
-                a: 0.8,
-                ..DARKGREEN
-            },
-        );
-    }
-    pub fn draw_offset(&self, offset: FVec2) {
-        let new_pos = self.pos + offset;
-        draw_circle(
-            new_pos.x.to_num(),
-            new_pos.y.to_num(),
-            Self::RADIUS.to_num(),
-            DARKGREEN,
+            Color::DARKGREEN,
         );
     }
 
