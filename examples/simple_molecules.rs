@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use molecules::{gas::*, init_rand};
 
 fn main() {
@@ -8,6 +10,7 @@ fn main() {
 
     // | grep -v '^INFO'
     let (mut rl, thread) = raylib::init().size(800, 800).title("Molecules").build();
+    rl.set_target_fps(60);
     let camera = system.container.get_camera(800.0);
 
     while !rl.window_should_close() {
@@ -30,9 +33,16 @@ fn main() {
         system.fix_bounds();
 
         let mut d = rl.begin_drawing(&thread);
-        let mut d = d.begin_mode2D(camera);
-
         d.clear_background(Color::GRAY);
-        system.draw(&mut d);
+
+        {
+            let mut d = d.begin_mode2D(camera);
+            system.draw(&mut d);
+        }
+
+        d.draw_rectangle(0, 0, 100, 20, Color::INDIGO);
+        d.draw_fps(10, 0);
+
+        std::thread::sleep(Duration::from_micros(100));
     }
 }
